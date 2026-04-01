@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
-import { StyleSheet, View } from "react-native";
-import MapView, { Marker } from "react-native-maps";
+import { ActivityIndicator, StyleSheet, View } from "react-native";
+import MapView, { Marker, UrlTile } from "react-native-maps";
 import { getUserLocation } from "../services/location";
 import { places } from "../services/places";
 
@@ -24,36 +24,54 @@ export default function CustomMapView() {
     })();
   }, []);
 
-  if (!region) return <View />;
+  if (!region) {
+    return (
+      <View style={styles.loader}>
+        <ActivityIndicator size="large" />
+      </View>
+    );
+  }
 
   return (
-    <MapView style={styles.map} initialRegion={region}>
-      {/* Usuario */}
-      <Marker
-        coordinate={{
-          latitude: region.latitude,
-          longitude: region.longitude,
-        }}
-        title="Estás acá"
-      />
-
-      {/* Lugares */}
-      {places.map((place) => (
-        <Marker
-          key={place.id}
-          coordinate={{
-            latitude: place.latitude,
-            longitude: place.longitude,
-          }}
-          title={place.name}
+    <View style={styles.container}>
+      <MapView style={styles.map} region={region}>
+        {/* 🗺️ OpenStreetMap tiles */}
+        <UrlTile
+          urlTemplate="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
+          maximumZ={19}
         />
-      ))}
-    </MapView>
+
+        {/* Usuario */}
+        <Marker
+          coordinate={{
+            latitude: region.latitude,
+            longitude: region.longitude,
+          }}
+          title="Estás acá"
+        />
+
+        {/* Lugares */}
+        {places.map((place) => (
+          <Marker
+            key={place.id}
+            coordinate={{
+              latitude: place.latitude,
+              longitude: place.longitude,
+            }}
+            title={place.name}
+          />
+        ))}
+      </MapView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  map: {
+  container: { flex: 1 },
+  map: { flex: 1 },
+  loader: {
     flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
   },
 });
