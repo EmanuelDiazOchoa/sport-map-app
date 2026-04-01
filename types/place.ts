@@ -4,4 +4,7 @@ export type Place = {
   latitude: number;
   longitude: number;
   type: "running" | "padel" | "gym";
+  description?: string;
+  rating?: number;
+  address?: string;
 };
