@@ -1,9 +1,29 @@
+export type SportType =
+  | "running"
+  | "padel"
+  | "gym"
+  | "football"
+  | "basketball"
+  | "tennis"
+  | "swimming"
+  | "volleyball"
+  | "cycling"
+  | "hockey"
+  | "rugby"
+  | "boxing"
+  | "martial_arts"
+  | "athletics"
+  | "crossfit"
+  | "climbing"
+  | "skateboarding"
+  | "other";
+
 export type Place = {
   id: string;
   name: string;
   latitude: number;
   longitude: number;
-  type: "running" | "padel" | "gym";
+  type: SportType;
   description?: string;
   rating?: number;
   address?: string;

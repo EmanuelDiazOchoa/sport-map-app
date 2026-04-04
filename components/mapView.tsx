@@ -11,6 +11,7 @@ import {
   View,
 } from "react-native";
 import WebView from "react-native-webview";
+import { fetchNearbyPlaces } from "../services/overpass";
 import { fetchPlaces } from "../services/supabasePlaces";
 import { Place } from "../types/place";
 
@@ -24,6 +25,21 @@ export const MARKER_CONFIG: Record<
   running: { color: "#EA580C", emoji: "🏃", label: "Running" },
   padel: { color: "#16A34A", emoji: "🎾", label: "Pádel" },
   gym: { color: "#7C3AED", emoji: "💪", label: "Gym" },
+  football: { color: "#15803D", emoji: "⚽", label: "Fútbol" },
+  basketball: { color: "#B45309", emoji: "🏀", label: "Básquet" },
+  tennis: { color: "#0369A1", emoji: "🎾", label: "Tenis" },
+  swimming: { color: "#0891B2", emoji: "🏊", label: "Natación" },
+  volleyball: { color: "#7C3AED", emoji: "🏐", label: "Vóley" },
+  cycling: { color: "#65A30D", emoji: "🚴", label: "Ciclismo" },
+  hockey: { color: "#BE185D", emoji: "🏑", label: "Hockey" },
+  rugby: { color: "#92400E", emoji: "🏉", label: "Rugby" },
+  boxing: { color: "#DC2626", emoji: "🥊", label: "Boxeo" },
+  martial_arts: { color: "#1D4ED8", emoji: "🥋", label: "Artes Marciales" },
+  athletics: { color: "#D97706", emoji: "🏅", label: "Atletismo" },
+  crossfit: { color: "#9333EA", emoji: "🏋️", label: "Crossfit" },
+  climbing: { color: "#64748B", emoji: "🧗", label: "Escalada" },
+  skateboarding: { color: "#0F172A", emoji: "🛹", label: "Skate" },
+  other: { color: "#6B7280", emoji: "📍", label: "Deporte" },
 };
 
 const FILTERS: { key: FilterType; label: string; color: string }[] = [
@@ -140,11 +156,22 @@ export default function CustomMapView() {
   }, []);
 
   useEffect(() => {
-    fetchPlaces().then((data) => {
-      setPlaces(data);
+    if (!coords) return;
+
+    Promise.all([
+      fetchPlaces(),
+      fetchNearbyPlaces(coords.latitude, coords.longitude),
+    ]).then(([supabasePlaces, osmPlaces]) => {
+      // Combinar: Supabase tiene prioridad, OSM llena el resto
+      const supabaseIds = new Set(supabasePlaces.map((p) => p.id));
+      const combined = [
+        ...supabasePlaces,
+        ...osmPlaces.filter((p) => !supabaseIds.has(p.id)),
+      ];
+      setPlaces(combined);
       setLoading(false);
     });
-  }, []);
+  }, [coords]);
 
   const showCard = (place: Place) => {
     setSelectedPlace(place);

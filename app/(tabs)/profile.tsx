@@ -1,5 +1,7 @@
 import { useRouter } from "expo-router";
+import { useEffect, useState } from "react";
 import {
+  ActivityIndicator,
   FlatList,
   StyleSheet,
   Text,
@@ -9,14 +11,25 @@ import {
 import { MARKER_CONFIG } from "../../components/MapView";
 import { useAuth } from "../../hooks/useAuth";
 import { useFavorites } from "../../hooks/useFavorites";
-import { places } from "../../services/places";
+import { fetchPlaces } from "../../services/supabasePlaces";
+import { Place } from "../../types/place";
 
 export default function ProfileScreen() {
   const { user, signOut } = useAuth();
   const { favorites, toggle } = useFavorites();
   const router = useRouter();
 
-  const favPlaces = places.filter((p) => favorites.includes(p.id));
+  const [allPlaces, setAllPlaces] = useState<Place[]>([]);
+  const [loadingPlaces, setLoadingPlaces] = useState(true);
+
+  useEffect(() => {
+    fetchPlaces().then((data) => {
+      setAllPlaces(data);
+      setLoadingPlaces(false);
+    });
+  }, []);
+
+  const favPlaces = allPlaces.filter((p) => favorites.includes(p.id));
 
   return (
     <View style={styles.root}>
@@ -51,7 +64,11 @@ export default function ProfileScreen() {
 
       <Text style={styles.sectionTitle}>Mis favoritos</Text>
 
-      {favPlaces.length === 0 ? (
+      {loadingPlaces ? (
+        <View style={styles.empty}>
+          <ActivityIndicator size="large" color="#2563EB" />
+        </View>
+      ) : favPlaces.length === 0 ? (
         <View style={styles.empty}>
           <Text style={styles.emptyEmoji}>🤍</Text>
           <Text style={styles.emptyTitle}>Sin favoritos aún</Text>

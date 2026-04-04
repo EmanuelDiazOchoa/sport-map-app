@@ -1,8 +1,8 @@
-// app/place/[id].tsx
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import {
   ActivityIndicator,
+  Image,
   ScrollView,
   StatusBar,
   StyleSheet,
@@ -13,6 +13,7 @@ import {
 import { MARKER_CONFIG } from "../../components/MapView";
 import { useFavorites } from "../../hooks/useFavorites";
 import { fetchPlaces } from "../../services/supabasePlaces";
+import { getPlaceImage } from "../../services/unsplash";
 import { Place } from "../../types/place";
 
 function StarRating({ rating }: { rating: number }) {
@@ -70,8 +71,18 @@ function getSports(type: string) {
       { emoji: "🏋️", label: "Pesas" },
       { emoji: "🤸", label: "Funcional" },
     ],
+    football: [{ emoji: "⚽", label: "Fútbol" }],
+    basketball: [{ emoji: "🏀", label: "Básquet" }],
+    tennis: [{ emoji: "🎾", label: "Tenis" }],
+    swimming: [{ emoji: "🏊", label: "Natación" }],
+    volleyball: [{ emoji: "🏐", label: "Vóley" }],
+    cycling: [{ emoji: "🚴", label: "Ciclismo" }],
+    hockey: [{ emoji: "🏑", label: "Hockey" }],
+    rugby: [{ emoji: "🏉", label: "Rugby" }],
+    boxing: [{ emoji: "🥊", label: "Boxeo" }],
+    martial_arts: [{ emoji: "🥋", label: "Artes Marciales" }],
   };
-  return map[type] ?? [{ emoji: "⚽", label: "Deporte" }];
+  return map[type] ?? [{ emoji: "🏅", label: "Deporte" }];
 }
 
 export default function PlaceDetail() {
@@ -81,27 +92,31 @@ export default function PlaceDetail() {
 
   const [place, setPlace] = useState<Place | undefined>(undefined);
   const [loadingPlace, setLoadingPlace] = useState(true);
+  const [imageUrl, setImageUrl] = useState<string | null>(null);
 
   useEffect(() => {
     fetchPlaces().then((data) => {
-      setPlace(data.find((p) => p.id === id));
+      const found = data.find((p) => p.id === id);
+      setPlace(found);
       setLoadingPlace(false);
     });
   }, [id]);
 
-  // Loading
+  useEffect(() => {
+    if (place) getPlaceImage(place.type).then(setImageUrl);
+  }, [place]);
+
   if (loadingPlace) {
     return (
-      <View style={styles.notFound}>
+      <View style={styles.centered}>
         <ActivityIndicator size="large" color="#2563EB" />
       </View>
     );
   }
 
-  // Not found
   if (!place) {
     return (
-      <View style={styles.notFound}>
+      <View style={styles.centered}>
         <Text style={styles.notFoundText}>Lugar no encontrado</Text>
         <TouchableOpacity onPress={() => router.back()}>
           <Text style={{ color: "#2563EB", marginTop: 12, fontWeight: "600" }}>
@@ -121,10 +136,21 @@ export default function PlaceDetail() {
 
   return (
     <View style={styles.root}>
-      <StatusBar barStyle="light-content" />
+      <StatusBar
+        barStyle="light-content"
+        translucent
+        backgroundColor="transparent"
+      />
 
-      {/* Hero */}
-      <View style={[styles.hero, { backgroundColor: cfg.color }]}>
+      {/* Hero con imagen */}
+      <View style={styles.heroContainer}>
+        {imageUrl ? (
+          <Image source={{ uri: imageUrl }} style={styles.heroImage} />
+        ) : (
+          <View style={[styles.heroImage, { backgroundColor: cfg.color }]} />
+        )}
+        <View style={styles.heroOverlay} />
+
         <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
           <Text style={styles.backBtnText}>←</Text>
         </TouchableOpacity>
@@ -134,10 +160,17 @@ export default function PlaceDetail() {
         >
           <Text style={{ fontSize: 22 }}>{fav ? "❤️" : "🤍"}</Text>
         </TouchableOpacity>
-        <Text style={styles.heroEmoji}>{cfg.emoji}</Text>
-        <Text style={styles.heroTitle}>{place.name}</Text>
-        <View style={styles.heroBadge}>
-          <Text style={styles.heroBadgeText}>{cfg.label}</Text>
+
+        <View style={styles.heroInfo}>
+          <View style={[styles.heroBadge, { backgroundColor: cfg.color }]}>
+            <Text style={styles.heroBadgeText}>
+              {cfg.emoji} {cfg.label}
+            </Text>
+          </View>
+          <Text style={styles.heroTitle}>{place.name}</Text>
+          {place.address && (
+            <Text style={styles.heroAddress}>📍 {place.address}</Text>
+          )}
         </View>
       </View>
 
@@ -146,14 +179,14 @@ export default function PlaceDetail() {
         style={styles.scroll}
         contentContainerStyle={styles.scrollContent}
       >
-        <View style={styles.section}>
-          {place.rating && <StarRating rating={place.rating} />}
-          {place.address && (
-            <Text style={styles.address}>📍 {place.address}</Text>
-          )}
-        </View>
-
-        <View style={styles.divider} />
+        {place.rating && (
+          <>
+            <View style={styles.section}>
+              <StarRating rating={place.rating} />
+            </View>
+            <View style={styles.divider} />
+          </>
+        )}
 
         {place.description && (
           <>
@@ -218,14 +251,18 @@ export default function PlaceDetail() {
 
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: "#F9FAFB" },
-  notFound: { flex: 1, justifyContent: "center", alignItems: "center" },
+  centered: { flex: 1, justifyContent: "center", alignItems: "center" },
   notFoundText: { fontSize: 16, color: "#6B7280" },
-  hero: {
-    paddingTop: 56,
-    paddingBottom: 32,
-    paddingHorizontal: 24,
-    alignItems: "center",
-    gap: 8,
+
+  heroContainer: { height: 280, position: "relative" },
+  heroImage: { width: "100%", height: 280, resizeMode: "cover" },
+  heroOverlay: {
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: 180,
+    backgroundColor: "rgba(0,0,0,0.5)",
   },
   backBtn: {
     position: "absolute",
@@ -234,7 +271,7 @@ const styles = StyleSheet.create({
     width: 38,
     height: 38,
     borderRadius: 999,
-    backgroundColor: "rgba(255,255,255,0.25)",
+    backgroundColor: "rgba(0,0,0,0.35)",
     alignItems: "center",
     justifyContent: "center",
   },
@@ -246,24 +283,21 @@ const styles = StyleSheet.create({
     width: 38,
     height: 38,
     borderRadius: 999,
-    backgroundColor: "rgba(255,255,255,0.25)",
+    backgroundColor: "rgba(0,0,0,0.35)",
     alignItems: "center",
     justifyContent: "center",
   },
-  heroEmoji: { fontSize: 52 },
-  heroTitle: {
-    fontSize: 24,
-    fontWeight: "800",
-    color: "white",
-    textAlign: "center",
-  },
+  heroInfo: { position: "absolute", bottom: 20, left: 20, right: 20, gap: 6 },
   heroBadge: {
-    backgroundColor: "rgba(255,255,255,0.25)",
-    paddingHorizontal: 14,
-    paddingVertical: 5,
+    alignSelf: "flex-start",
+    paddingHorizontal: 12,
+    paddingVertical: 4,
     borderRadius: 999,
   },
-  heroBadgeText: { color: "white", fontWeight: "700", fontSize: 13 },
+  heroBadgeText: { color: "white", fontWeight: "700", fontSize: 12 },
+  heroTitle: { fontSize: 24, fontWeight: "800", color: "white" },
+  heroAddress: { fontSize: 13, color: "rgba(255,255,255,0.85)" },
+
   scroll: { flex: 1 },
   scrollContent: { paddingBottom: 120 },
   section: { padding: 20, gap: 10 },
@@ -274,7 +308,6 @@ const styles = StyleSheet.create({
     color: "#111827",
     marginBottom: 2,
   },
-  address: { fontSize: 14, color: "#6B7280" },
   description: { fontSize: 15, color: "#374151", lineHeight: 22 },
   infoRow: {
     flexDirection: "row",
