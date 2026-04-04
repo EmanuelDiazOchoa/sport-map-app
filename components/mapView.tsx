@@ -11,7 +11,7 @@ import {
   View,
 } from "react-native";
 import WebView from "react-native-webview";
-import { places } from "../services/places";
+import { fetchPlaces } from "../services/supabasePlaces";
 import { Place } from "../types/place";
 
 type Coords = { latitude: number; longitude: number };
@@ -66,6 +66,7 @@ const buildHTML = (coords: Coords, filteredPlaces: Place[]) => {
   <style>
     *{margin:0;padding:0;box-sizing:border-box}
     html,body,#map{width:100%;height:100%}
+    .leaflet-popup-content-wrapper{border-radius:12px;box-shadow:0 4px 16px rgba(0,0,0,.15)}
   </style>
 </head>
 <body>
@@ -112,8 +113,10 @@ function StarRating({ rating }: { rating: number }) {
 export default function CustomMapView() {
   const router = useRouter();
   const [coords, setCoords] = useState<Coords | null>(null);
+  const [places, setPlaces] = useState<Place[]>([]);
   const [filter, setFilter] = useState<FilterType>("all");
   const [selectedPlace, setSelectedPlace] = useState<Place | null>(null);
+  const [loading, setLoading] = useState(true);
   const slideAnim = useRef(new Animated.Value(300)).current;
   const webViewRef = useRef<any>(null);
 
@@ -134,6 +137,13 @@ export default function CustomMapView() {
         setCoords({ latitude: -34.6037, longitude: -58.565 });
       }
     })();
+  }, []);
+
+  useEffect(() => {
+    fetchPlaces().then((data) => {
+      setPlaces(data);
+      setLoading(false);
+    });
   }, []);
 
   const showCard = (place: Place) => {
@@ -164,12 +174,15 @@ export default function CustomMapView() {
 
   const filtered =
     filter === "all" ? places : places.filter((p) => p.type === filter);
-  const html = coords ? buildHTML(coords, filtered) : null;
+  const html = coords && !loading ? buildHTML(coords, filtered) : null;
 
   if (!html) {
     return (
       <View style={styles.loader}>
         <ActivityIndicator size="large" color="#2563EB" />
+        <Text style={{ marginTop: 12, color: "#6B7280", fontSize: 14 }}>
+          {!coords ? "Obteniendo ubicación..." : "Cargando lugares..."}
+        </Text>
       </View>
     );
   }
@@ -178,7 +191,6 @@ export default function CustomMapView() {
 
   return (
     <View style={styles.container}>
-      {/* Filtros */}
       <View style={styles.filterBar}>
         <ScrollView
           horizontal
@@ -212,7 +224,6 @@ export default function CustomMapView() {
         </ScrollView>
       </View>
 
-      {/* Mapa */}
       <WebView
         ref={webViewRef}
         style={styles.map}
@@ -229,14 +240,11 @@ export default function CustomMapView() {
         )}
       />
 
-      {/* Bottom sheet card */}
       {selectedPlace && cfg && (
         <Animated.View
           style={[styles.card, { transform: [{ translateY: slideAnim }] }]}
         >
-          {/* Handle */}
           <View style={styles.handle} />
-
           <View style={styles.cardHeader}>
             <View style={[styles.badge, { backgroundColor: cfg.color + "20" }]}>
               <Text style={[styles.badgeText, { color: cfg.color }]}>
@@ -247,19 +255,14 @@ export default function CustomMapView() {
               <Text style={styles.closeBtnText}>✕</Text>
             </TouchableOpacity>
           </View>
-
           <Text style={styles.cardTitle}>{selectedPlace.name}</Text>
-
           {selectedPlace.rating && <StarRating rating={selectedPlace.rating} />}
-
           {selectedPlace.address && (
             <Text style={styles.cardAddress}>📍 {selectedPlace.address}</Text>
           )}
-
           {selectedPlace.description && (
             <Text style={styles.cardDesc}>{selectedPlace.description}</Text>
           )}
-
           <TouchableOpacity
             style={[styles.detailBtn, { backgroundColor: cfg.color }]}
             onPress={() => {

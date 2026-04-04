@@ -7,4 +7,7 @@ export type Place = {
   description?: string;
   rating?: number;
   address?: string;
+  schedule?: string;
+  price?: string;
+  phone?: string;
 };
