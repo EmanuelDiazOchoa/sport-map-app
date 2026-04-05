@@ -1,10 +1,13 @@
 import { StyleSheet, Text, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import CustomMapView from "../../components/MapView";
 
 export default function HomeScreen() {
+  const insets = useSafeAreaInsets();
+
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
+      <View style={[styles.header, { paddingTop: insets.top + 8 }]}>
         <Text style={styles.headerEmoji}>🏟️</Text>
         <View>
           <Text style={styles.headerTitle}>SportMap</Text>
@@ -23,7 +26,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: 10,
     paddingHorizontal: 16,
-    paddingTop: 52,
     paddingBottom: 12,
     backgroundColor: "white",
     borderBottomWidth: 1,

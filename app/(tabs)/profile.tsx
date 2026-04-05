@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { MARKER_CONFIG } from "../../components/MapView";
 import { useAuth } from "../../hooks/useAuth";
 import { useFavorites } from "../../hooks/useFavorites";
@@ -14,11 +15,11 @@ export default function ProfileScreen() {
   const { user, signOut } = useAuth();
   const { favorites, toggle } = useFavorites();
   const router = useRouter();
+  const insets = useSafeAreaInsets();
 
   return (
     <View style={styles.root}>
-      {/* Header usuario */}
-      <View style={styles.userHeader}>
+      <View style={[styles.userHeader, { paddingTop: insets.top + 12 }]}>
         <View style={styles.avatar}>
           <Text style={styles.avatarText}>
             {user ? user.email?.[0].toUpperCase() : "?"}
@@ -78,7 +79,15 @@ export default function ProfileScreen() {
             return (
               <TouchableOpacity
                 style={styles.card}
-                onPress={() => router.push(`/place/${item.id}`)}
+                onPress={() =>
+                  router.push({
+                    pathname: "/place/[id]",
+                    params: {
+                      id: item.id,
+                      placeData: JSON.stringify(item),
+                    },
+                  })
+                }
                 activeOpacity={0.8}
               >
                 <View
@@ -122,7 +131,8 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 12,
-    padding: 20,
+    paddingHorizontal: 20,
+    paddingBottom: 16,
     backgroundColor: "white",
     borderBottomWidth: 1,
     borderBottomColor: "#F3F4F6",
