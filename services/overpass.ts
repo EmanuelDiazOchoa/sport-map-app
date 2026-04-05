@@ -73,7 +73,16 @@ export async function fetchNearbyPlaces(
       method: "POST",
       body: buildQuery(lat, lng),
     });
-    const json = await res.json();
+
+    const text = await res.text();
+    if (!text.startsWith("{") && !text.startsWith("[")) {
+      console.warn(
+        "Overpass respondió con formato inesperado, usando fallback",
+      );
+      return [];
+    }
+
+    const json = JSON.parse(text);
 
     const places: Place[] = json.elements
       .filter(
