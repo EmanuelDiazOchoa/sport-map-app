@@ -154,10 +154,7 @@ export default function PlaceDetail() {
         <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
           <Text style={styles.backBtnText}>←</Text>
         </TouchableOpacity>
-        <TouchableOpacity
-          onPress={() => toggle(place.id)}
-          style={styles.favBtn}
-        >
+        <TouchableOpacity onPress={() => toggle(place)} style={styles.favBtn}>
           <Text style={{ fontSize: 22 }}>{fav ? "❤️" : "🤍"}</Text>
         </TouchableOpacity>
 

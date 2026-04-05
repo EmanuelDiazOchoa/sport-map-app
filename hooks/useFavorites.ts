@@ -1,10 +1,11 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useEffect, useState } from "react";
+import { Place } from "../types/place";
 
-const KEY = "favorites";
+const KEY = "favorites_v2";
 
 export function useFavorites() {
-  const [favorites, setFavorites] = useState<string[]>([]);
+  const [favorites, setFavorites] = useState<Place[]>([]);
 
   useEffect(() => {
     AsyncStorage.getItem(KEY).then((data) => {
@@ -12,19 +13,20 @@ export function useFavorites() {
     });
   }, []);
 
-  const save = async (ids: string[]) => {
-    setFavorites(ids);
-    await AsyncStorage.setItem(KEY, JSON.stringify(ids));
+  const save = async (places: Place[]) => {
+    setFavorites(places);
+    await AsyncStorage.setItem(KEY, JSON.stringify(places));
   };
 
-  const toggle = (id: string) => {
-    const updated = favorites.includes(id)
-      ? favorites.filter((f) => f !== id)
-      : [...favorites, id];
+  const toggle = (place: Place) => {
+    const exists = favorites.some((f) => f.id === place.id);
+    const updated = exists
+      ? favorites.filter((f) => f.id !== place.id)
+      : [...favorites, place];
     save(updated);
   };
 
-  const isFavorite = (id: string) => favorites.includes(id);
+  const isFavorite = (id: string) => favorites.some((f) => f.id === id);
 
   return { favorites, toggle, isFavorite };
 }

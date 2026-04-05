@@ -29,12 +29,29 @@ function inferType(tags: any): Place["type"] {
 function inferName(tags: any, type: Place["type"]): string {
   if (tags.name) return tags.name;
   if (tags["name:es"]) return tags["name:es"];
-  const defaults: Record<Place["type"], string> = {
+
+  const defaults: Partial<Record<Place["type"], string>> = {
     running: "Espacio para running",
     padel: "Cancha deportiva",
     gym: "Gimnasio al aire libre",
+    football: "Cancha de fútbol",
+    basketball: "Cancha de básquet",
+    tennis: "Cancha de tenis",
+    swimming: "Pileta / natación",
+    volleyball: "Cancha de vóley",
+    cycling: "Circuito de ciclismo",
+    hockey: "Cancha de hockey",
+    rugby: "Cancha de rugby",
+    boxing: "Gimnasio de boxeo",
+    martial_arts: "Dojo / artes marciales",
+    athletics: "Pista de atletismo",
+    crossfit: "Box de crossfit",
+    climbing: "Rocódromo",
+    skateboarding: "Skate park",
+    other: "Espacio deportivo",
   };
-  return defaults[type];
+
+  return defaults[type] ?? "Espacio deportivo";
 }
 
 function dedup(places: Place[]): Place[] {

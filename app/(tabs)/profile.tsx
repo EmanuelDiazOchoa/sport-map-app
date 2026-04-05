@@ -1,7 +1,5 @@
 import { useRouter } from "expo-router";
-import { useEffect, useState } from "react";
 import {
-  ActivityIndicator,
   FlatList,
   StyleSheet,
   Text,
@@ -11,25 +9,11 @@ import {
 import { MARKER_CONFIG } from "../../components/MapView";
 import { useAuth } from "../../hooks/useAuth";
 import { useFavorites } from "../../hooks/useFavorites";
-import { fetchPlaces } from "../../services/supabasePlaces";
-import { Place } from "../../types/place";
 
 export default function ProfileScreen() {
   const { user, signOut } = useAuth();
   const { favorites, toggle } = useFavorites();
   const router = useRouter();
-
-  const [allPlaces, setAllPlaces] = useState<Place[]>([]);
-  const [loadingPlaces, setLoadingPlaces] = useState(true);
-
-  useEffect(() => {
-    fetchPlaces().then((data) => {
-      setAllPlaces(data);
-      setLoadingPlaces(false);
-    });
-  }, []);
-
-  const favPlaces = allPlaces.filter((p) => favorites.includes(p.id));
 
   return (
     <View style={styles.root}>
@@ -62,23 +46,27 @@ export default function ProfileScreen() {
         )}
       </View>
 
-      <Text style={styles.sectionTitle}>Mis favoritos</Text>
+      <Text style={styles.sectionTitle}>
+        Mis favoritos {favorites.length > 0 && `(${favorites.length})`}
+      </Text>
 
-      {loadingPlaces ? (
-        <View style={styles.empty}>
-          <ActivityIndicator size="large" color="#2563EB" />
-        </View>
-      ) : favPlaces.length === 0 ? (
+      {favorites.length === 0 ? (
         <View style={styles.empty}>
           <Text style={styles.emptyEmoji}>🤍</Text>
           <Text style={styles.emptyTitle}>Sin favoritos aún</Text>
           <Text style={styles.emptyText}>
             Tocá el corazón en cualquier lugar para guardarlo acá.
           </Text>
+          <TouchableOpacity
+            style={styles.exploreBtn}
+            onPress={() => router.push("/")}
+          >
+            <Text style={styles.exploreBtnText}>Explorar el mapa →</Text>
+          </TouchableOpacity>
         </View>
       ) : (
         <FlatList
-          data={favPlaces}
+          data={favorites}
           keyExtractor={(p) => p.id}
           contentContainerStyle={{ padding: 16, gap: 12 }}
           renderItem={({ item }) => {
@@ -114,7 +102,7 @@ export default function ProfileScreen() {
                   )}
                 </View>
                 <TouchableOpacity
-                  onPress={() => toggle(item.id)}
+                  onPress={() => toggle(item)}
                   hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
                 >
                   <Text style={{ fontSize: 22 }}>❤️</Text>
@@ -177,7 +165,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    gap: 10,
+    gap: 12,
     paddingHorizontal: 40,
   },
   emptyEmoji: { fontSize: 52 },
@@ -188,6 +176,14 @@ const styles = StyleSheet.create({
     textAlign: "center",
     lineHeight: 20,
   },
+  exploreBtn: {
+    marginTop: 4,
+    backgroundColor: "#2563EB",
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 999,
+  },
+  exploreBtnText: { color: "white", fontWeight: "700", fontSize: 14 },
   card: {
     flexDirection: "row",
     alignItems: "center",
