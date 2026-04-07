@@ -19,6 +19,7 @@ export default function ProfileScreen() {
 
   return (
     <View style={styles.root}>
+      {/* Header usuario */}
       <View style={[styles.userHeader, { paddingTop: insets.top + 12 }]}>
         <View style={styles.avatar}>
           <Text style={styles.avatarText}>
@@ -46,6 +47,14 @@ export default function ProfileScreen() {
           </TouchableOpacity>
         )}
       </View>
+
+      {/* Botón mis reservas */}
+      <TouchableOpacity
+        style={styles.bookingsBtn}
+        onPress={() => router.push("/my-bookings")}
+      >
+        <Text style={styles.bookingsBtnText}>📅 Ver mis reservas</Text>
+      </TouchableOpacity>
 
       <Text style={styles.sectionTitle}>
         Mis favoritos {favorites.length > 0 && `(${favorites.length})`}
@@ -163,12 +172,22 @@ const styles = StyleSheet.create({
     backgroundColor: "#2563EB",
   },
   loginText: { fontSize: 13, fontWeight: "600", color: "white" },
+  bookingsBtn: {
+    marginHorizontal: 20,
+    marginTop: 16,
+    marginBottom: 4,
+    backgroundColor: "#F3F4F6",
+    borderRadius: 12,
+    paddingVertical: 12,
+    alignItems: "center",
+  },
+  bookingsBtnText: { fontSize: 14, fontWeight: "700", color: "#374151" },
   sectionTitle: {
     fontSize: 20,
     fontWeight: "800",
     color: "#111827",
     paddingHorizontal: 20,
-    paddingTop: 20,
+    paddingTop: 12,
     paddingBottom: 4,
   },
   empty: {

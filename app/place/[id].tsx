@@ -86,7 +86,11 @@ function getSports(type: string) {
 }
 
 export default function PlaceDetail() {
-  const { id } = useLocalSearchParams<{ id: string }>();
+  // ✅ CAMBIO 1: agregado placeData
+  const { id, placeData } = useLocalSearchParams<{
+    id: string;
+    placeData?: string;
+  }>();
   const router = useRouter();
   const { isFavorite, toggle } = useFavorites();
 
@@ -94,10 +98,15 @@ export default function PlaceDetail() {
   const [loadingPlace, setLoadingPlace] = useState(true);
   const [imageUrl, setImageUrl] = useState<string | null>(null);
 
+  // ✅ CAMBIO 2: fallback a placeData para lugares OSM
   useEffect(() => {
     fetchPlaces().then((data) => {
       const found = data.find((p) => p.id === id);
-      setPlace(found);
+      if (found) {
+        setPlace(found);
+      } else if (placeData) {
+        setPlace(JSON.parse(placeData) as Place);
+      }
       setLoadingPlace(false);
     });
   }, [id]);
@@ -142,7 +151,6 @@ export default function PlaceDetail() {
         backgroundColor="transparent"
       />
 
-      {/* Hero con imagen */}
       <View style={styles.heroContainer}>
         {imageUrl ? (
           <Image source={{ uri: imageUrl }} style={styles.heroImage} />
@@ -150,14 +158,12 @@ export default function PlaceDetail() {
           <View style={[styles.heroImage, { backgroundColor: cfg.color }]} />
         )}
         <View style={styles.heroOverlay} />
-
         <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
           <Text style={styles.backBtnText}>←</Text>
         </TouchableOpacity>
         <TouchableOpacity onPress={() => toggle(place)} style={styles.favBtn}>
           <Text style={{ fontSize: 22 }}>{fav ? "❤️" : "🤍"}</Text>
         </TouchableOpacity>
-
         <View style={styles.heroInfo}>
           <View style={[styles.heroBadge, { backgroundColor: cfg.color }]}>
             <Text style={styles.heroBadgeText}>
@@ -171,7 +177,6 @@ export default function PlaceDetail() {
         </View>
       </View>
 
-      {/* Scroll */}
       <ScrollView
         style={styles.scroll}
         contentContainerStyle={styles.scrollContent}
@@ -184,7 +189,6 @@ export default function PlaceDetail() {
             <View style={styles.divider} />
           </>
         )}
-
         {place.description && (
           <>
             <View style={styles.section}>
@@ -194,7 +198,6 @@ export default function PlaceDetail() {
             <View style={styles.divider} />
           </>
         )}
-
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Información</Text>
           {INFO_ROWS.map((row) => (
@@ -209,9 +212,7 @@ export default function PlaceDetail() {
             </View>
           ))}
         </View>
-
         <View style={styles.divider} />
-
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Deportes disponibles</Text>
           <View style={styles.sportsRow}>
@@ -233,11 +234,21 @@ export default function PlaceDetail() {
         </View>
       </ScrollView>
 
-      {/* CTA */}
+      {/* ✅ CAMBIO 3: botón CTA navega a reservas */}
       <View style={styles.ctaContainer}>
         <TouchableOpacity
           style={[styles.ctaBtn, { backgroundColor: cfg.color }]}
           activeOpacity={0.85}
+          onPress={() =>
+            router.push({
+              pathname: "/booking/[id]",
+              params: {
+                id: place.id,
+                placeName: place.name,
+                placeType: place.type,
+              },
+            })
+          }
         >
           <Text style={styles.ctaBtnText}>Reservar lugar</Text>
         </TouchableOpacity>
@@ -250,7 +261,6 @@ const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: "#F9FAFB" },
   centered: { flex: 1, justifyContent: "center", alignItems: "center" },
   notFoundText: { fontSize: 16, color: "#6B7280" },
-
   heroContainer: { height: 280, position: "relative" },
   heroImage: { width: "100%", height: 280, resizeMode: "cover" },
   heroOverlay: {
@@ -294,7 +304,6 @@ const styles = StyleSheet.create({
   heroBadgeText: { color: "white", fontWeight: "700", fontSize: 12 },
   heroTitle: { fontSize: 24, fontWeight: "800", color: "white" },
   heroAddress: { fontSize: 13, color: "rgba(255,255,255,0.85)" },
-
   scroll: { flex: 1 },
   scrollContent: { paddingBottom: 120 },
   section: { padding: 20, gap: 10 },

@@ -16,7 +16,25 @@ import { fetchPlaces } from "../services/supabasePlaces";
 import { Place } from "../types/place";
 
 type Coords = { latitude: number; longitude: number };
-type FilterType = "all" | "running" | "padel" | "gym";
+type FilterType =
+  | "all"
+  | "running"
+  | "padel"
+  | "gym"
+  | "football"
+  | "basketball"
+  | "tennis"
+  | "swimming"
+  | "volleyball"
+  | "cycling"
+  | "hockey"
+  | "rugby"
+  | "boxing"
+  | "martial_arts"
+  | "athletics"
+  | "crossfit"
+  | "climbing"
+  | "other";
 
 export const MARKER_CONFIG: Record<
   string,
@@ -47,8 +65,21 @@ const FILTERS: { key: FilterType; label: string; color: string }[] = [
   { key: "running", label: "🏃 Running", color: "#EA580C" },
   { key: "padel", label: "🎾 Pádel", color: "#16A34A" },
   { key: "gym", label: "💪 Gym", color: "#7C3AED" },
+  { key: "football", label: "⚽ Fútbol", color: "#15803D" },
+  { key: "basketball", label: "🏀 Básquet", color: "#B45309" },
+  { key: "tennis", label: "🎾 Tenis", color: "#0369A1" },
+  { key: "swimming", label: "🏊 Natación", color: "#0891B2" },
+  { key: "volleyball", label: "🏐 Vóley", color: "#7C3AED" },
+  { key: "cycling", label: "🚴 Ciclismo", color: "#65A30D" },
+  { key: "hockey", label: "🏑 Hockey", color: "#BE185D" },
+  { key: "rugby", label: "🏉 Rugby", color: "#92400E" },
+  { key: "boxing", label: "🥊 Boxeo", color: "#DC2626" },
+  { key: "martial_arts", label: "🥋 Artes M.", color: "#1D4ED8" },
+  { key: "athletics", label: "🏅 Atletismo", color: "#D97706" },
+  { key: "crossfit", label: "🏋️ Crossfit", color: "#9333EA" },
+  { key: "climbing", label: "🧗 Escalada", color: "#64748B" },
+  { key: "other", label: "📍 Otros", color: "#6B7280" },
 ];
-
 const buildHTML = (coords: Coords, filteredPlaces: Place[]) => {
   const markersJS = filteredPlaces
     .map((p) => {
@@ -294,7 +325,13 @@ export default function CustomMapView() {
             style={[styles.detailBtn, { backgroundColor: cfg.color }]}
             onPress={() => {
               hideCard();
-              router.push(`/place/${selectedPlace.id}`);
+              router.push({
+                pathname: "/place/[id]",
+                params: {
+                  id: selectedPlace.id,
+                  placeData: JSON.stringify(selectedPlace),
+                },
+              });
             }}
             activeOpacity={0.85}
           >
