@@ -81,6 +81,30 @@ function getSports(type: string) {
     rugby: [{ emoji: "🏉", label: "Rugby" }],
     boxing: [{ emoji: "🥊", label: "Boxeo" }],
     martial_arts: [{ emoji: "🥋", label: "Artes Marciales" }],
+    simulator_f1: [
+      { emoji: "🏎️", label: "F1" },
+      { emoji: "🏁", label: "Racing" },
+    ],
+    simulator_flight: [
+      { emoji: "✈️", label: "Vuelo comercial" },
+      { emoji: "🛩️", label: "Vuelo privado" },
+    ],
+    simulator_rally: [
+      { emoji: "🚗", label: "Rally" },
+      { emoji: "🏔️", label: "Off-road" },
+    ],
+    simulator_golf: [
+      { emoji: "⛳", label: "Golf" },
+      { emoji: "🏌️", label: "Swing" },
+    ],
+    simulator_vr: [
+      { emoji: "🥽", label: "VR Sport" },
+      { emoji: "🎮", label: "Gaming" },
+    ],
+    simulator_shooting: [
+      { emoji: "🎯", label: "Tiro" },
+      { emoji: "🔫", label: "Precisión" },
+    ],
   };
   return map[type] ?? [{ emoji: "🏅", label: "Deporte" }];
 }

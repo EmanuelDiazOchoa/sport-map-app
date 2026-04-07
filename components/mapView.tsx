@@ -26,6 +26,12 @@ type FilterType =
   | "tennis"
   | "swimming"
   | "volleyball"
+  | "simulator_f1"
+  | "simulator_flight"
+  | "simulator_rally"
+  | "simulator_golf"
+  | "simulator_vr"
+  | "simulator_shooting"
   | "cycling"
   | "hockey"
   | "rugby"
@@ -57,6 +63,12 @@ export const MARKER_CONFIG: Record<
   crossfit: { color: "#9333EA", emoji: "🏋️", label: "Crossfit" },
   climbing: { color: "#64748B", emoji: "🧗", label: "Escalada" },
   skateboarding: { color: "#0F172A", emoji: "🛹", label: "Skate" },
+  simulator_f1: { color: "#DC2626", emoji: "🏎️", label: "Sim F1" },
+  simulator_flight: { color: "#1D4ED8", emoji: "✈️", label: "Sim Vuelo" },
+  simulator_rally: { color: "#92400E", emoji: "🚗", label: "Sim Rally" },
+  simulator_golf: { color: "#15803D", emoji: "⛳", label: "Sim Golf" },
+  simulator_vr: { color: "#7C3AED", emoji: "🥽", label: "Sim VR" },
+  simulator_shooting: { color: "#374151", emoji: "🎯", label: "Sim Tiro" },
   other: { color: "#6B7280", emoji: "📍", label: "Deporte" },
 };
 
@@ -80,6 +92,7 @@ const FILTERS: { key: FilterType; label: string; color: string }[] = [
   { key: "climbing", label: "🧗 Escalada", color: "#64748B" },
   { key: "other", label: "📍 Otros", color: "#6B7280" },
 ];
+
 const buildHTML = (coords: Coords, filteredPlaces: Place[]) => {
   const markersJS = filteredPlaces
     .map((p) => {

@@ -16,6 +16,12 @@ export type SportType =
   | "crossfit"
   | "climbing"
   | "skateboarding"
+  | "simulator_f1"
+  | "simulator_flight"
+  | "simulator_rally"
+  | "simulator_golf"
+  | "simulator_vr"
+  | "simulator_shooting"
   | "other";
 
 export type Place = {
