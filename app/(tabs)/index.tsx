@@ -1,9 +1,11 @@
+import { useRouter } from "expo-router";
 import { StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import CustomMapView from "../../components/MapView";
 
 export default function HomeScreen() {
   const insets = useSafeAreaInsets();
+  const router = useRouter();
 
   return (
     <View style={styles.container}>
