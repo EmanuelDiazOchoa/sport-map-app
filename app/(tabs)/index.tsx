@@ -1,5 +1,5 @@
 import { useRouter } from "expo-router";
-import { StyleSheet, Text, View } from "react-native";
+import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import CustomMapView from "../../components/MapView";
 
@@ -11,10 +11,16 @@ export default function HomeScreen() {
     <View style={styles.container}>
       <View style={[styles.header, { paddingTop: insets.top + 8 }]}>
         <Text style={styles.headerEmoji}>🏟️</Text>
-        <View>
+        <View style={{ flex: 1 }}>
           <Text style={styles.headerTitle}>SportMap</Text>
           <Text style={styles.headerSub}>Encontrá tu lugar para entrenar</Text>
         </View>
+        <TouchableOpacity
+          onPress={() => router.push("/ai-chat")}
+          style={styles.aiBtn}
+        >
+          <Text style={{ fontSize: 20 }}>🤖</Text>
+        </TouchableOpacity>
       </View>
       <CustomMapView />
     </View>
@@ -41,4 +47,12 @@ const styles = StyleSheet.create({
   headerEmoji: { fontSize: 28 },
   headerTitle: { fontSize: 20, fontWeight: "800", color: "#111827" },
   headerSub: { fontSize: 12, color: "#9CA3AF", marginTop: 1 },
+  aiBtn: {
+    width: 38,
+    height: 38,
+    borderRadius: 999,
+    backgroundColor: "#EFF6FF",
+    alignItems: "center",
+    justifyContent: "center",
+  },
 });

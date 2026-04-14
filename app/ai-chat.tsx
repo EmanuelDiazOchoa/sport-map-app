@@ -1,22 +1,22 @@
 import { useRouter } from "expo-router";
 import { useEffect, useRef, useState } from "react";
 import {
-    ActivityIndicator,
-    FlatList,
-    KeyboardAvoidingView,
-    Platform,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  ActivityIndicator,
+  FlatList,
+  KeyboardAvoidingView,
+  Platform,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { MARKER_CONFIG } from "../components/MapView";
 import { fetchPlaces } from "../services/supabasePlaces";
 import { Place } from "../types/place";
 
-const ANTHROPIC_KEY = "TU_API_KEY_AQUI"; // ← reemplazá con tu key
+const apiKey = process.env.EXPO_PUBLIC_GROQ_API_KEY;
 
 type Message = {
   id: string;
@@ -116,29 +116,31 @@ LUGARES_IDS: id1,id2,id3
 
 Si no hay lugares que se ajusten, igualmente respondé con sugerencias y poné LUGARES_IDS: ninguno`;
 
-      const response = await fetch("https://api.anthropic.com/v1/messages", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "x-api-key": ANTHROPIC_KEY,
-          "anthropic-version": "2023-06-01",
+      const response = await fetch(
+        "https://api.groq.com/openai/v1/chat/completions",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${apiKey}`,
+          },
+          body: JSON.stringify({
+            model: "llama-3.3-70b-versatile",
+            max_tokens: 1000,
+            messages: [
+              { role: "system", content: systemPrompt },
+              ...messages
+                .filter((m) => m.id !== "welcome")
+                .map((m) => ({ role: m.role, content: m.text })),
+              { role: "user", content: text.trim() },
+            ],
+          }),
         },
-        body: JSON.stringify({
-          model: "claude-sonnet-4-20250514",
-          max_tokens: 1000,
-          system: systemPrompt,
-          messages: [
-            ...messages
-              .filter((m) => m.id !== "welcome")
-              .map((m) => ({ role: m.role, content: m.text })),
-            { role: "user", content: text.trim() },
-          ],
-        }),
-      });
+      );
 
       const data = await response.json();
       const fullText =
-        data.content?.[0]?.text ?? "No pude procesar tu consulta.";
+        data.choices?.[0]?.message?.content ?? "No pude procesar tu consulta.";
 
       // Extraer IDs de lugares recomendados
       const idsMatch = fullText.match(/LUGARES_IDS:\s*(.+)/);
@@ -151,7 +153,6 @@ Si no hay lugares que se ajusten, igualmente respondé con sugerencias y poné L
         recommendedIds.includes(p.id),
       );
 
-      // Limpiar el texto de la línea de IDs
       const cleanText = fullText.replace(/LUGARES_IDS:.*$/m, "").trim();
 
       const assistantMsg: Message = {
@@ -197,7 +198,6 @@ Si no hay lugares que se ajusten, igualmente respondé con sugerencias y poné L
         </View>
       </View>
 
-      {/* Mensajes */}
       <FlatList
         ref={flatListRef}
         data={messages}
@@ -228,11 +228,11 @@ Si no hay lugares que se ajusten, igualmente respondé con sugerencias y poné L
                   <Text style={styles.placesLabel}>
                     📍 Lugares recomendados:
                   </Text>
-                  {item.places.map((place) => (
+                  {item.places.map((place: Place) => (
                     <PlaceChip
                       key={place.id}
                       place={place}
-                      onPress={() =>
+                      onPress={(): void =>
                         router.push({
                           pathname: "/place/[id]",
                           params: {
@@ -259,7 +259,6 @@ Si no hay lugares que se ajusten, igualmente respondé con sugerencias y poné L
         }
       />
 
-      {/* Sugerencias rápidas */}
       {messages.length <= 1 && (
         <View style={styles.suggestions}>
           <FlatList
@@ -280,7 +279,6 @@ Si no hay lugares que se ajusten, igualmente respondé con sugerencias y poné L
         </View>
       )}
 
-      {/* Input */}
       <View style={[styles.inputBar, { paddingBottom: insets.bottom + 8 }]}>
         <TextInput
           style={styles.input}
