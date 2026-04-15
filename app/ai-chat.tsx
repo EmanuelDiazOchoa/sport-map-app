@@ -1,3 +1,4 @@
+import * as Location from "expo-location";
 import { useRouter } from "expo-router";
 import { useEffect, useRef, useState } from "react";
 import {
@@ -25,6 +26,111 @@ type Message = {
   places?: Place[];
 };
 
+type WeatherInfo = {
+  temp: number;
+  condition: string;
+  emoji: string;
+  isOutdoorFriendly: boolean;
+};
+
+async function fetchWeather(lat: number, lon: number): Promise<WeatherInfo> {
+  try {
+    const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,weathercode&timezone=auto`;
+    const res = await fetch(url);
+    const data = await res.json();
+    const temp = Math.round(data.current.temperature_2m);
+    const code = data.current.weathercode;
+
+    let condition = "Despejado";
+    let emoji = "☀️";
+    let isOutdoorFriendly = true;
+
+    if (code === 0) {
+      condition = "Cielo despejado";
+      emoji = "☀️";
+    } else if (code <= 3) {
+      condition = "Parcialmente nublado";
+      emoji = "⛅";
+    } else if (code <= 49) {
+      condition = "Nublado / neblina";
+      emoji = "🌫️";
+      isOutdoorFriendly = false;
+    } else if (code <= 67) {
+      condition = "Lluvia";
+      emoji = "🌧️";
+      isOutdoorFriendly = false;
+    } else if (code <= 77) {
+      condition = "Nieve";
+      emoji = "❄️";
+      isOutdoorFriendly = false;
+    } else if (code <= 82) {
+      condition = "Lluvia intensa";
+      emoji = "⛈️";
+      isOutdoorFriendly = false;
+    } else {
+      condition = "Tormenta";
+      emoji = "⛈️";
+      isOutdoorFriendly = false;
+    }
+
+    if (temp > 35) isOutdoorFriendly = false;
+
+    return { temp, condition, emoji, isOutdoorFriendly };
+  } catch {
+    return {
+      temp: 20,
+      condition: "Sin datos",
+      emoji: "🌡️",
+      isOutdoorFriendly: true,
+    };
+  }
+}
+
+function getTimeContext(): string {
+  const hour = new Date().getHours();
+  if (hour >= 6 && hour < 12) return "mañana";
+  if (hour >= 12 && hour < 18) return "tarde";
+  if (hour >= 18 && hour < 22) return "noche";
+  return "madrugada";
+}
+
+function buildSuggestions(
+  weather: WeatherInfo | null,
+  timeOfDay: string,
+): string[] {
+  const base = [
+    "¿Qué puedo hacer ahora mismo? 🤔",
+    "Quiero algo para quemar calorías 🔥",
+    "Busco un lugar para entrenar solo",
+    "Quiero probar algo nuevo este finde 🎯",
+    "Quiero probar un simulador de F1 🏎️",
+  ];
+
+  if (!weather) return base;
+
+  const dynamic: string[] = [];
+
+  if (!weather.isOutdoorFriendly) {
+    dynamic.push(
+      `Está ${weather.condition.toLowerCase()} ${weather.emoji}, ¿qué puedo hacer bajo techo?`,
+    );
+    dynamic.push("Llueve afuera, quiero algo indoor 🏠");
+  } else {
+    dynamic.push(
+      `Hace ${weather.temp}°C y buen tiempo, ¿algo al aire libre? ${weather.emoji}`,
+    );
+  }
+
+  if (timeOfDay === "mañana")
+    dynamic.push("Quiero entrenar antes del trabajo 💪");
+  if (timeOfDay === "tarde")
+    dynamic.push("Tengo la tarde libre, ¿qué me recomendás?");
+  if (timeOfDay === "noche")
+    dynamic.push("Busco algo para hacer esta noche 🌙");
+
+  return [...dynamic, ...base].slice(0, 5);
+}
+
 function PlaceChip({ place, onPress }: { place: Place; onPress: () => void }) {
   const cfg = MARKER_CONFIG[place.type] ?? MARKER_CONFIG.other;
   return (
@@ -51,13 +157,16 @@ function PlaceChip({ place, onPress }: { place: Place; onPress: () => void }) {
   );
 }
 
-const SUGGESTIONS = [
-  "Quiero entrenar pierna al aire libre 💪",
-  "Busco una cancha de fútbol cerca",
-  "¿Dónde puedo correr por las mañanas?",
-  "Algo para relajarme y hacer yoga",
-  "Quiero probar un simulador de F1 🏎️",
-];
+function WeatherBadge({ weather }: { weather: WeatherInfo }) {
+  return (
+    <View style={styles.weatherBadge}>
+      <Text style={styles.weatherEmoji}>{weather.emoji}</Text>
+      <Text style={styles.weatherText}>
+        {weather.temp}°C · {weather.condition}
+      </Text>
+    </View>
+  );
+}
 
 export default function AIChatScreen() {
   const router = useRouter();
@@ -74,10 +183,28 @@ export default function AIChatScreen() {
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [allPlaces, setAllPlaces] = useState<Place[]>([]);
+  const [weather, setWeather] = useState<WeatherInfo | null>(null);
+  const [timeOfDay] = useState(getTimeContext());
 
   useEffect(() => {
     fetchPlaces().then(setAllPlaces);
+
+    (async () => {
+      try {
+        const { status } = await Location.requestForegroundPermissionsAsync();
+        if (status === "granted") {
+          const loc = await Location.getCurrentPositionAsync({});
+          const w = await fetchWeather(
+            loc.coords.latitude,
+            loc.coords.longitude,
+          );
+          setWeather(w);
+        }
+      } catch {}
+    })();
   }, []);
+
+  const suggestions = buildSuggestions(weather, timeOfDay);
 
   const sendMessage = async (text: string) => {
     if (!text.trim() || loading) return;
@@ -87,7 +214,6 @@ export default function AIChatScreen() {
       role: "user",
       text: text.trim(),
     };
-
     setMessages((prev) => [...prev, userMsg]);
     setInput("");
     setLoading(true);
@@ -96,25 +222,50 @@ export default function AIChatScreen() {
       const placesContext = allPlaces
         .map((p) => {
           const cfg = MARKER_CONFIG[p.type] ?? MARKER_CONFIG.other;
-          return `- ${p.name} (${cfg.label}): ${p.description ?? "Sin descripción"}. Dirección: ${p.address ?? "Sin dirección"}.`;
+          const isIndoor = [
+            "gym",
+            "swimming",
+            "boxing",
+            "martial_arts",
+            "crossfit",
+            "simulator_f1",
+            "simulator_flight",
+            "simulator_rally",
+            "simulator_golf",
+            "simulator_vr",
+            "simulator_shooting",
+          ].includes(p.type);
+          return `- ID:${p.id} | ${p.name} (${cfg.label}) | ${isIndoor ? "INDOOR" : "OUTDOOR"} | ${p.description ?? "Sin descripción"} | Dirección: ${p.address ?? "Sin dirección"} | Precio: ${p.price ?? "Sin info"} | Horario: ${p.schedule ?? "Sin info"}`;
         })
         .join("\n");
 
-      const systemPrompt = `Sos un asistente deportivo amigable para la app SportMap, una app argentina de búsqueda de espacios deportivos.
+      const weatherContext = weather
+        ? `Clima actual: ${weather.temp}°C, ${weather.condition}. ${weather.isOutdoorFriendly ? "Buen clima para actividades al aire libre." : "Clima no favorable para actividades al aire libre — preferir opciones INDOOR."}`
+        : "Clima: sin datos disponibles.";
 
-Tenés acceso a estos lugares disponibles en el mapa:
+      const systemPrompt = `Sos SportMap AI, un asistente deportivo inteligente para una app argentina de búsqueda de espacios deportivos en Buenos Aires.
+
+${weatherContext}
+Momento del día: ${timeOfDay}
+
+LUGARES DISPONIBLES EN EL MAPA:
 ${placesContext}
 
-Tu trabajo es:
-1. Entender qué quiere hacer el usuario (deporte, objetivo, estado de ánimo)
-2. Recomendar 1 a 3 lugares de la lista que mejor se ajusten
-3. Explicar brevemente por qué cada lugar es una buena opción
-4. Ser amigable, usar español rioplatense y emojis ocasionalmente
+TU TRABAJO:
+1. Entender qué quiere hacer el usuario — deporte, objetivo, estado de ánimo, disponibilidad de tiempo
+2. Considerar el clima actual y el momento del día para recomendar lugares OUTDOOR o INDOOR según corresponda
+3. Recomendar 1 a 3 lugares que mejor se ajusten, explicando brevemente por qué
+4. Si el clima es malo (lluvia, tormenta, calor extremo), priorizar opciones INDOOR
+5. Mencionar precio y horario si están disponibles
+6. Ser amigable, usar español rioplatense y emojis ocasionalmente
+7. Si el usuario pregunta por el clima, respondé con lo que sabés
 
-IMPORTANTE: Al final de tu respuesta, siempre incluí una línea con los IDs de los lugares recomendados en este formato exacto:
+FORMATO DE RESPUESTA:
+- Texto de recomendación natural y conversacional
+- Al final, SIEMPRE incluí exactamente esta línea:
 LUGARES_IDS: id1,id2,id3
 
-Si no hay lugares que se ajusten, igualmente respondé con sugerencias y poné LUGARES_IDS: ninguno`;
+Si no hay lugares que se ajusten: LUGARES_IDS: ninguno`;
 
       const response = await fetch(
         "https://api.groq.com/openai/v1/chat/completions",
@@ -142,7 +293,6 @@ Si no hay lugares que se ajusten, igualmente respondé con sugerencias y poné L
       const fullText =
         data.choices?.[0]?.message?.content ?? "No pude procesar tu consulta.";
 
-      // Extraer IDs de lugares recomendados
       const idsMatch = fullText.match(/LUGARES_IDS:\s*(.+)/);
       const idsRaw = idsMatch?.[1]?.trim() ?? "";
       const recommendedIds =
@@ -152,18 +302,18 @@ Si no hay lugares que se ajusten, igualmente respondé con sugerencias y poné L
       const recommendedPlaces = allPlaces.filter((p) =>
         recommendedIds.includes(p.id),
       );
-
       const cleanText = fullText.replace(/LUGARES_IDS:.*$/m, "").trim();
 
-      const assistantMsg: Message = {
-        id: (Date.now() + 1).toString(),
-        role: "assistant",
-        text: cleanText,
-        places: recommendedPlaces.length > 0 ? recommendedPlaces : undefined,
-      };
-
-      setMessages((prev) => [...prev, assistantMsg]);
-    } catch (err) {
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: (Date.now() + 1).toString(),
+          role: "assistant",
+          text: cleanText,
+          places: recommendedPlaces.length > 0 ? recommendedPlaces : undefined,
+        },
+      ]);
+    } catch {
       setMessages((prev) => [
         ...prev,
         {
@@ -194,7 +344,11 @@ Si no hay lugares que se ajusten, igualmente respondé con sugerencias y poné L
         </TouchableOpacity>
         <View style={styles.headerInfo}>
           <Text style={styles.headerTitle}>🤖 Asistente SportMap</Text>
-          <Text style={styles.headerSub}>IA para recomendarte lugares</Text>
+          {weather ? (
+            <WeatherBadge weather={weather} />
+          ) : (
+            <Text style={styles.headerSub}>IA para recomendarte lugares</Text>
+          )}
         </View>
       </View>
 
@@ -232,7 +386,7 @@ Si no hay lugares que se ajusten, igualmente respondé con sugerencias y poné L
                     <PlaceChip
                       key={place.id}
                       place={place}
-                      onPress={(): void =>
+                      onPress={() =>
                         router.push({
                           pathname: "/place/[id]",
                           params: {
@@ -264,7 +418,7 @@ Si no hay lugares que se ajusten, igualmente respondé con sugerencias y poné L
           <FlatList
             horizontal
             showsHorizontalScrollIndicator={false}
-            data={SUGGESTIONS}
+            data={suggestions}
             keyExtractor={(s) => s}
             contentContainerStyle={{ gap: 8, paddingHorizontal: 16 }}
             renderItem={({ item }) => (
@@ -330,6 +484,14 @@ const styles = StyleSheet.create({
   headerInfo: { flex: 1 },
   headerTitle: { fontSize: 16, fontWeight: "800", color: "#111827" },
   headerSub: { fontSize: 12, color: "#9CA3AF", marginTop: 1 },
+  weatherBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+    marginTop: 2,
+  },
+  weatherEmoji: { fontSize: 13 },
+  weatherText: { fontSize: 12, color: "#059669", fontWeight: "600" },
   messagesList: { padding: 16, gap: 12, paddingBottom: 8 },
   bubble: { flexDirection: "row", gap: 8, maxWidth: "90%" },
   bubbleUser: { alignSelf: "flex-end", flexDirection: "row-reverse" },
