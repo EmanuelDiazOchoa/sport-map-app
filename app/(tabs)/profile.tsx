@@ -1,3 +1,4 @@
+import PlaceCard from "@/components/PlaceCard";
 import { useRouter } from "expo-router";
 import {
   FlatList,
@@ -7,7 +8,6 @@ import {
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { MARKER_CONFIG } from "../../components/MapView";
 import { useAuth } from "../../hooks/useAuth";
 import { useFavorites } from "../../hooks/useFavorites";
 
@@ -79,55 +79,13 @@ export default function ProfileScreen() {
           data={favorites}
           keyExtractor={(p) => p.id}
           contentContainerStyle={{ padding: 16, gap: 12 }}
-          renderItem={({ item }) => {
-            const cfg = MARKER_CONFIG[item.type] ?? {
-              color: "#2563EB",
-              emoji: "📍",
-              label: item.type,
-            };
-            return (
-              <TouchableOpacity
-                style={styles.card}
-                onPress={() =>
-                  router.push({
-                    pathname: "/place/[id]",
-                    params: {
-                      id: item.id,
-                      placeData: JSON.stringify(item),
-                    },
-                  })
-                }
-                activeOpacity={0.8}
-              >
-                <View
-                  style={[
-                    styles.cardIcon,
-                    { backgroundColor: cfg.color + "20" },
-                  ]}
-                >
-                  <Text style={{ fontSize: 26 }}>{cfg.emoji}</Text>
-                </View>
-                <View style={{ flex: 1 }}>
-                  <Text style={styles.cardName}>{item.name}</Text>
-                  {item.address && (
-                    <Text style={styles.cardAddress}>📍 {item.address}</Text>
-                  )}
-                  {item.rating && (
-                    <Text style={styles.cardRating}>
-                      {"★".repeat(Math.round(item.rating))}{" "}
-                      {item.rating.toFixed(1)}
-                    </Text>
-                  )}
-                </View>
-                <TouchableOpacity
-                  onPress={() => toggle(item)}
-                  hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-                >
-                  <Text style={{ fontSize: 22 }}>❤️</Text>
-                </TouchableOpacity>
-              </TouchableOpacity>
-            );
-          }}
+          renderItem={({ item }) => (
+            <PlaceCard
+              place={item}
+              isFavorite={true}
+              onFavoriteToggle={() => toggle(item)}
+            />
+          )}
         />
       )}
     </View>
