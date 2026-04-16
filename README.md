@@ -36,7 +36,8 @@ SportMap es una app mobile desarrollada con React Native + Expo que combina geol
 | Backend   | Supabase (PostgreSQL + Auth + RLS)   |
 | Datos OSM | Overpass API                         |
 | Imágenes  | Unsplash API                         |
-| IA        | Claude API (Anthropic)               |
+| IA        | Groq API (Llama 3.3 — gratuito)      |
+| Clima     | Open-Meteo API (gratuita, sin key)   |
 | Estado    | React hooks + AsyncStorage           |
 | Lenguaje  | TypeScript                           |
 
@@ -88,7 +89,7 @@ npx expo start
 ### Variables de entorno
 
 El proyecto usa claves directamente en el código para simplificar el setup. Para producción, moverlas a `.env`:
-SUPABASE_URL=https://xxx.supabase.co
+SUPABASE_URL=<https://xxx.supabase.co>
 SUPABASE_KEY=sb_publishable_xxx
 UNSPLASH_KEY=xxx
 ANTHROPIC_KEY=xxx
@@ -140,7 +141,8 @@ create table bookings (
 - [x] Autenticación con Supabase
 - [x] Sistema de reservas
 - [x] Simuladores deportivos
-- [ ] IA recomendador
+- [x] IA recomendador con clima en tiempo real
+- [x] Clima en pantalla principal
 - [ ] Push notifications
 - [ ] Freemium con RevenueCat
 
@@ -148,11 +150,11 @@ create table bookings (
 
 ## 👤 Autor
 
-**Emanuel Díaz Ochoa**
+### Emanuel Díaz Ochoa
 
 - GitHub: [@tu-usuario](https://github.com/tu-usuario)
 - LinkedIn: [tu-linkedin](https://linkedin.com/in/tu-linkedin)
 
 ---
 
-_Proyecto desarrollado como portfolio. Open to work 🚀_
+Proyecto desarrollado como portfolio. Open to work 🚀
