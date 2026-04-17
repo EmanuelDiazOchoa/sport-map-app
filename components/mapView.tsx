@@ -18,10 +18,10 @@ import { Place } from "../types/place";
 type Coords = { latitude: number; longitude: number };
 type FilterType =
   | "all"
+  | "football"
   | "running"
   | "padel"
   | "gym"
-  | "football"
   | "basketball"
   | "tennis"
   | "swimming"
