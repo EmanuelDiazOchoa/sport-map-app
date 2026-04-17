@@ -22,7 +22,8 @@ SportMap es una app mobile desarrollada con React Native + Expo que combina geol
 - 📅 **Sistema de reservas** completo con selección de día y horario
 - 🔐 **Autenticación** con Supabase Auth (email/password)
 - 🖼️ **Imágenes reales** por tipo de lugar via Unsplash API
-- 🤖 **IA recomendador** — chat inteligente que sugiere lugares según tu objetivo
+- 🌤️ **Clima en tiempo real** en el header — sin API key, gratis
+- 🤖 **IA recomendador** — chat inteligente con contexto de clima, hora del día y lugares disponibles
 
 ---
 
@@ -48,15 +49,17 @@ SportMap es una app mobile desarrollada con React Native + Expo que combina geol
 sport-map-app/
 ├── app/
 │ ├── (tabs)/
-│ │ ├── index.tsx # Mapa principal
+│ │ ├── index.tsx # Mapa principal + clima en tiempo real
 │ │ ├── explore.tsx # Explorador por deporte
 │ │ └── profile.tsx # Perfil + favoritos
 │ ├── place/[id].tsx # Detalle del lugar
 │ ├── booking/[id].tsx # Pantalla de reserva
 │ ├── my-bookings.tsx # Mis reservas
+│ ├── ai-chat.tsx # Chat IA con clima y recomendaciones
 │ └── auth.tsx # Login / Registro
 ├── components/
-│ └── MapView.tsx # Mapa + markers + bottom sheet
+│ ├── MapView.tsx # Mapa + markers + filtros + bottom sheet
+│ └── PlaceCard.tsx # Card reutilizable de lugar
 ├── services/
 │ ├── supabasePlaces.ts # Lugares desde Supabase
 │ ├── overpass.ts # Lugares reales de OSM
@@ -76,27 +79,26 @@ sport-map-app/
 
 ```bash
 # Clonar el repo
-git clone https://github.com/tu-usuario/sport-map-app.git
+git clone https://github.com/EmanuelDiazOchoa/sport-map-app.git
 cd sport-map-app
 
 # Instalar dependencias
 npm install
 
 # Correr en Expo Go
-npx expo start
+npx expo start --clear
 ```
 
 ### Variables de entorno
 
-El proyecto usa claves directamente en el código para simplificar el setup. Para producción, moverlas a `.env`:
-SUPABASE_URL=<https://xxx.supabase.co>
-SUPABASE_KEY=sb_publishable_xxx
-UNSPLASH_KEY=xxx
-ANTHROPIC_KEY=xxx
+Crear un archivo `.env` en la raíz del proyecto:
+La key de Groq es **gratuita** — registrate en [console.groq.com](https://console.groq.com) sin tarjeta de crédito.
+
+El resto de las claves (Supabase, Unsplash) están hardcodeadas para simplificar el setup de demo. Para producción, moverlas también al `.env`.
 
 ### Base de datos (Supabase)
 
-Correr el SQL en Supabase SQL Editor:
+Correr el SQL en el SQL Editor de Supabase:
 
 ```sql
 -- Tabla places
@@ -127,34 +129,39 @@ create table bookings (
   status text default 'confirmed',
   created_at timestamp with time zone default now()
 );
+
+-- RLS bookings
+alter table bookings enable row level security;
+create policy "Users see own bookings" on bookings
+  for all using (auth.uid() = user_id);
 ```
 
 ---
 
 ## 📋 Roadmap
 
-- [x] Mapa con OSM + CartoDB
-- [x] Markers por tipo de deporte
-- [x] Filtros + bottom sheet
-- [x] Pantalla de detalle con imagen real
-- [x] Favoritos persistentes
-- [x] Autenticación con Supabase
-- [x] Sistema de reservas
-- [x] Simuladores deportivos
-- [x] IA recomendador con clima en tiempo real
-- [x] Clima en pantalla principal
-- [ ] Push notifications
+- [x] Mapa con OSM + CartoDB (sin Google Maps)
+- [x] Markers por tipo de deporte con colores y emojis
+- [x] Filtros por deporte + bottom sheet animado
+- [x] Pantalla de detalle con imagen real (Unsplash)
+- [x] Favoritos persistentes con AsyncStorage
+- [x] Autenticación con Supabase Auth
+- [x] Sistema de reservas completo (día + horario + cancelar)
+- [x] Simuladores deportivos (F1, vuelo, rally, golf, VR, tiro)
+- [x] Clima en tiempo real en header principal (Open-Meteo)
+- [x] IA recomendador con contexto de clima, hora y lugares
+- [ ] Push notifications para recordar reservas
 - [ ] Freemium con RevenueCat
 
 ---
 
 ## 👤 Autor
 
-### Emanuel Díaz Ochoa
+Emanuel Díaz Ochoa
 
-- GitHub: [@tu-usuario](https://github.com/tu-usuario)
+- GitHub: [@EmanuelDiazOchoa](https://github.com/EmanuelDiazOchoa)
 - LinkedIn: [tu-linkedin](https://linkedin.com/in/tu-linkedin)
 
 ---
 
-Proyecto desarrollado como portfolio. Open to work 🚀
+## Proyecto desarrollado como portfolio. Open to work 🚀

@@ -7,9 +7,6 @@
     "icon": "./assets/images/icon.png",
     "scheme": "sportmapapp",
     "userInterfaceStyle": "automatic",
-    "extra": {
-      "groqKey": ""
-    },
 
     "ios": {
       "supportsTablet": true
