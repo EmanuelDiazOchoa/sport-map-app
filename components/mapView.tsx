@@ -16,22 +16,17 @@ import { fetchPlaces } from "../services/supabasePlaces";
 import { Place } from "../types/place";
 
 type Coords = { latitude: number; longitude: number };
+
 type FilterType =
   | "all"
-  | "football"
   | "running"
   | "padel"
   | "gym"
+  | "football"
   | "basketball"
   | "tennis"
   | "swimming"
   | "volleyball"
-  | "simulator_f1"
-  | "simulator_flight"
-  | "simulator_rally"
-  | "simulator_golf"
-  | "simulator_vr"
-  | "simulator_shooting"
   | "cycling"
   | "hockey"
   | "rugby"
@@ -40,6 +35,27 @@ type FilterType =
   | "athletics"
   | "crossfit"
   | "climbing"
+  | "skateboarding"
+  | "handball"
+  | "table_tennis"
+  | "badminton"
+  | "rowing"
+  | "kayak"
+  | "wrestling"
+  | "judo"
+  | "taekwondo"
+  | "fencing"
+  | "archery"
+  | "weightlifting"
+  | "gymnastics"
+  | "triathlon"
+  | "equestrian"
+  | "simulator_f1"
+  | "simulator_flight"
+  | "simulator_rally"
+  | "simulator_golf"
+  | "simulator_vr"
+  | "simulator_shooting"
   | "other";
 
 export const MARKER_CONFIG: Record<
@@ -63,6 +79,20 @@ export const MARKER_CONFIG: Record<
   crossfit: { color: "#9333EA", emoji: "🏋️", label: "Crossfit" },
   climbing: { color: "#64748B", emoji: "🧗", label: "Escalada" },
   skateboarding: { color: "#0F172A", emoji: "🛹", label: "Skate" },
+  handball: { color: "#DC2626", emoji: "🤾", label: "Handball" },
+  table_tennis: { color: "#0369A1", emoji: "🏓", label: "Tenis de Mesa" },
+  badminton: { color: "#16A34A", emoji: "🏸", label: "Bádminton" },
+  rowing: { color: "#0891B2", emoji: "🚣", label: "Remo" },
+  kayak: { color: "#0E7490", emoji: "🛶", label: "Canotaje" },
+  wrestling: { color: "#92400E", emoji: "🤼", label: "Lucha" },
+  judo: { color: "#1D4ED8", emoji: "🥋", label: "Judo" },
+  taekwondo: { color: "#DC2626", emoji: "🦵", label: "Taekwondo" },
+  fencing: { color: "#374151", emoji: "🤺", label: "Esgrima" },
+  archery: { color: "#065F46", emoji: "🏹", label: "Tiro con Arco" },
+  weightlifting: { color: "#7C3AED", emoji: "🏋️", label: "Halterofilia" },
+  gymnastics: { color: "#BE185D", emoji: "🤸", label: "Gimnasia" },
+  triathlon: { color: "#D97706", emoji: "🏊", label: "Triatlón" },
+  equestrian: { color: "#92400E", emoji: "🏇", label: "Equitación" },
   simulator_f1: { color: "#DC2626", emoji: "🏎️", label: "Sim F1" },
   simulator_flight: { color: "#1D4ED8", emoji: "✈️", label: "Sim Vuelo" },
   simulator_rally: { color: "#92400E", emoji: "🚗", label: "Sim Rally" },
@@ -82,14 +112,29 @@ const FILTERS: { key: FilterType; label: string; color: string }[] = [
   { key: "tennis", label: "🎾 Tenis", color: "#0369A1" },
   { key: "swimming", label: "🏊 Natación", color: "#0891B2" },
   { key: "volleyball", label: "🏐 Vóley", color: "#7C3AED" },
+  { key: "handball", label: "🤾 Handball", color: "#DC2626" },
   { key: "cycling", label: "🚴 Ciclismo", color: "#65A30D" },
   { key: "hockey", label: "🏑 Hockey", color: "#BE185D" },
   { key: "rugby", label: "🏉 Rugby", color: "#92400E" },
   { key: "boxing", label: "🥊 Boxeo", color: "#DC2626" },
   { key: "martial_arts", label: "🥋 Artes M.", color: "#1D4ED8" },
+  { key: "judo", label: "🥋 Judo", color: "#1D4ED8" },
+  { key: "taekwondo", label: "🦵 Taekwondo", color: "#DC2626" },
+  { key: "wrestling", label: "🤼 Lucha", color: "#92400E" },
+  { key: "fencing", label: "🤺 Esgrima", color: "#374151" },
   { key: "athletics", label: "🏅 Atletismo", color: "#D97706" },
+  { key: "gymnastics", label: "🤸 Gimnasia", color: "#BE185D" },
+  { key: "weightlifting", label: "🏋️ Halterofilia", color: "#7C3AED" },
   { key: "crossfit", label: "🏋️ Crossfit", color: "#9333EA" },
+  { key: "table_tennis", label: "🏓 T. Mesa", color: "#0369A1" },
+  { key: "badminton", label: "🏸 Bádminton", color: "#16A34A" },
+  { key: "archery", label: "🏹 Arco", color: "#065F46" },
+  { key: "rowing", label: "🚣 Remo", color: "#0891B2" },
+  { key: "kayak", label: "🛶 Canotaje", color: "#0E7490" },
+  { key: "triathlon", label: "🏊 Triatlón", color: "#D97706" },
+  { key: "equestrian", label: "🏇 Equitación", color: "#92400E" },
   { key: "climbing", label: "🧗 Escalada", color: "#64748B" },
+  { key: "skateboarding", label: "🛹 Skate", color: "#0F172A" },
   { key: "other", label: "📍 Otros", color: "#6B7280" },
 ];
 
@@ -201,12 +246,10 @@ export default function CustomMapView() {
 
   useEffect(() => {
     if (!coords) return;
-
     Promise.all([
       fetchPlaces(),
       fetchNearbyPlaces(coords.latitude, coords.longitude),
     ]).then(([supabasePlaces, osmPlaces]) => {
-      // Combinar: Supabase tiene prioridad, OSM llena el resto
       const supabaseIds = new Set(supabasePlaces.map((p) => p.id));
       const combined = [
         ...supabasePlaces,

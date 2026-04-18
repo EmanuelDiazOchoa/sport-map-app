@@ -7,8 +7,11 @@ const TAG_QUERIES = [
   { key: "leisure", value: "swimming_pool", type: "swimming" },
   { key: "leisure", value: "track", type: "athletics" },
   { key: "leisure", value: "skateboard_park", type: "skateboarding" },
+  { key: "leisure", value: "sports_centre", type: "gym" },
+  { key: "leisure", value: "stadium", type: "athletics" },
   { key: "amenity", value: "gym", type: "gym" },
   { key: "amenity", value: "swimming_pool", type: "swimming" },
+  { key: "amenity", value: "sports_centre", type: "gym" },
   { key: "sport", value: "padel", type: "padel" },
   { key: "sport", value: "tennis", type: "tennis" },
   { key: "sport", value: "soccer", type: "football" },
@@ -24,17 +27,33 @@ const TAG_QUERIES = [
   { key: "sport", value: "running", type: "running" },
   { key: "sport", value: "climbing", type: "climbing" },
   { key: "sport", value: "skateboard", type: "skateboarding" },
+  { key: "sport", value: "handball", type: "handball" },
+  { key: "sport", value: "table_tennis", type: "table_tennis" },
+  { key: "sport", value: "badminton", type: "badminton" },
+  { key: "sport", value: "rowing", type: "rowing" },
+  { key: "sport", value: "canoe", type: "kayak" },
+  { key: "sport", value: "kayak", type: "kayak" },
+  { key: "sport", value: "wrestling", type: "wrestling" },
+  { key: "sport", value: "judo", type: "judo" },
+  { key: "sport", value: "taekwondo", type: "taekwondo" },
+  { key: "sport", value: "fencing", type: "fencing" },
+  { key: "sport", value: "archery", type: "archery" },
+  { key: "sport", value: "weightlifting", type: "weightlifting" },
+  { key: "sport", value: "gymnastics", type: "gymnastics" },
+  { key: "sport", value: "triathlon", type: "triathlon" },
+  { key: "sport", value: "equestrian", type: "equestrian" },
+  { key: "sport", value: "swimming", type: "swimming" },
+  { key: "sport", value: "multi", type: "gym" },
 ];
 
-function buildQuery(lat: number, lng: number, radius = 2000): string {
+function buildQuery(lat: number, lng: number, radius = 5000): string {
   const filters = TAG_QUERIES.map(
     ({ key, value }) => `
     node["${key}"="${value}"](around:${radius},${lat},${lng});
     way["${key}"="${value}"](around:${radius},${lat},${lng});
   `,
   ).join("\n");
-
-  return `[out:json][timeout:15];(${filters});out center;`;
+  return `[out:json][timeout:25];(${filters});out center;`;
 }
 
 function inferType(tags: any): Place["type"] {
@@ -51,16 +70,42 @@ function inferType(tags: any): Place["type"] {
   if (sport === "hockey") return "hockey";
   if (sport === "rugby") return "rugby";
   if (sport === "boxing") return "boxing";
+  if (sport === "judo") return "judo";
+  if (sport === "taekwondo") return "taekwondo";
+  if (sport === "wrestling") return "wrestling";
+  if (sport === "fencing") return "fencing";
+  if (sport === "archery") return "archery";
+  if (sport === "weightlifting") return "weightlifting";
+  if (sport === "gymnastics") return "gymnastics";
+  if (sport === "triathlon") return "triathlon";
+  if (sport === "equestrian") return "equestrian";
+  if (sport === "handball") return "handball";
+  if (sport === "table_tennis") return "table_tennis";
+  if (sport === "badminton") return "badminton";
+  if (sport === "rowing") return "rowing";
+  if (sport === "canoe" || sport === "kayak") return "kayak";
   if (sport === "martial_arts") return "martial_arts";
   if (sport === "athletics" || leisure === "track") return "athletics";
   if (sport === "running" || leisure === "park") return "running";
   if (sport === "climbing") return "climbing";
   if (sport === "skateboard" || leisure === "skateboard_park")
     return "skateboarding";
-  if (leisure === "fitness_station" || amenity === "gym") return "gym";
-  if (leisure === "swimming_pool" || amenity === "swimming_pool")
+  if (
+    sport === "swimming" ||
+    amenity === "swimming_pool" ||
+    leisure === "swimming_pool"
+  )
     return "swimming";
+  if (
+    sport === "multi" ||
+    leisure === "sports_centre" ||
+    amenity === "sports_centre" ||
+    leisure === "fitness_station" ||
+    amenity === "gym"
+  )
+    return "gym";
   if (leisure === "pitch") return "football";
+  if (leisure === "stadium") return "athletics";
   return "other";
 }
 
@@ -70,8 +115,8 @@ function inferName(tags: any, type: Place["type"]): string {
 
   const defaults: Partial<Record<Place["type"], string>> = {
     running: "Espacio para running",
-    padel: "Cancha deportiva",
-    gym: "Gimnasio al aire libre",
+    padel: "Cancha de pádel",
+    gym: "Gimnasio / Centro deportivo",
     football: "Cancha de fútbol",
     basketball: "Cancha de básquet",
     tennis: "Cancha de tenis",
@@ -86,6 +131,20 @@ function inferName(tags: any, type: Place["type"]): string {
     crossfit: "Box de crossfit",
     climbing: "Rocódromo",
     skateboarding: "Skate park",
+    handball: "Cancha de handball",
+    table_tennis: "Mesa de ping pong",
+    badminton: "Cancha de bádminton",
+    rowing: "Club de remo",
+    kayak: "Club de canotaje",
+    wrestling: "Sala de lucha",
+    judo: "Dojo de judo",
+    taekwondo: "Dojo de taekwondo",
+    fencing: "Sala de esgrima",
+    archery: "Campo de tiro con arco",
+    weightlifting: "Sala de halterofilia",
+    gymnastics: "Gimnasio artístico",
+    triathlon: "Club de triatlón",
+    equestrian: "Club hípico",
     other: "Espacio deportivo",
   };
 
@@ -114,9 +173,7 @@ export async function fetchNearbyPlaces(
 
     const text = await res.text();
     if (!text.startsWith("{") && !text.startsWith("[")) {
-      console.warn(
-        "Overpass respondió con formato inesperado, usando fallback",
-      );
+      console.warn("Overpass respondió con formato inesperado");
       return [];
     }
 
