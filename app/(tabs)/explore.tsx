@@ -32,7 +32,9 @@ export default function ExploreScreen() {
           <TouchableOpacity
             key={sport.key}
             style={styles.card}
-            onPress={() => router.push("/")}
+            onPress={() =>
+              router.push({ pathname: "/", params: { filter: sport.key } })
+            }
             activeOpacity={0.8}
           >
             <View
