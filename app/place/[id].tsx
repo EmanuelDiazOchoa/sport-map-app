@@ -11,35 +11,84 @@ import {
   View,
 } from "react-native";
 import { MARKER_CONFIG } from "../../components/MapView";
+import { useAuth } from "../../hooks/useAuth";
 import { useFavorites } from "../../hooks/useFavorites";
+import {
+  getPlaceAvgRating,
+  getUserRating,
+  submitRating,
+} from "../../services/ratings";
 import { fetchPlaces } from "../../services/supabasePlaces";
 import { getPlaceImage } from "../../services/unsplash";
 import { Place } from "../../types/place";
 
-function StarRating({ rating }: { rating: number }) {
+function StarRating({
+  rating,
+  count,
+  userRating,
+  onRate,
+  loading,
+}: {
+  rating: number;
+  count?: number;
+  userRating?: number | null;
+  onRate?: (r: number) => void;
+  loading?: boolean;
+}) {
   return (
-    <View style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
-      {[1, 2, 3, 4, 5].map((i) => (
-        <Text
-          key={i}
-          style={{
-            fontSize: 18,
-            color: i <= Math.round(rating) ? "#FBBF24" : "#E5E7EB",
-          }}
-        >
-          ★
+    <View style={{ gap: 6 }}>
+      {/* Promedio actual */}
+      <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+        {[1, 2, 3, 4, 5].map((i) => (
+          <Text
+            key={i}
+            style={{
+              fontSize: 22,
+              color: i <= Math.round(rating) ? "#FBBF24" : "#E5E7EB",
+            }}
+          >
+            ★
+          </Text>
+        ))}
+        <Text style={{ fontSize: 15, color: "#6B7280", fontWeight: "600" }}>
+          {rating.toFixed(1)}
         </Text>
-      ))}
-      <Text
-        style={{
-          fontSize: 15,
-          color: "#6B7280",
-          marginLeft: 4,
-          fontWeight: "600",
-        }}
-      >
-        {rating.toFixed(1)}
-      </Text>
+        {count !== undefined && (
+          <Text style={{ fontSize: 12, color: "#9CA3AF" }}>
+            ({count} votos)
+          </Text>
+        )}
+      </View>
+      {/* Votación del usuario */}
+      {onRate && (
+        <View style={{ gap: 4 }}>
+          <Text style={{ fontSize: 12, color: "#6B7280", fontWeight: "600" }}>
+            {userRating
+              ? `Tu valoración: ${userRating}★`
+              : "¿Qué te pareció este lugar?"}
+          </Text>
+          <View style={{ flexDirection: "row", gap: 6 }}>
+            {[1, 2, 3, 4, 5].map((i) => (
+              <TouchableOpacity
+                key={i}
+                onPress={() => !loading && onRate(i)}
+                disabled={loading}
+                activeOpacity={0.7}
+              >
+                <Text
+                  style={{
+                    fontSize: 28,
+                    color:
+                      userRating && i <= userRating ? "#F59E0B" : "#D1D5DB",
+                  }}
+                >
+                  ★
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        </View>
+      )}
     </View>
   );
 }
@@ -110,19 +159,24 @@ function getSports(type: string) {
 }
 
 export default function PlaceDetail() {
-  // ✅ CAMBIO 1: agregado placeData
   const { id, placeData } = useLocalSearchParams<{
     id: string;
     placeData?: string;
   }>();
   const router = useRouter();
   const { isFavorite, toggle } = useFavorites();
+  const { user } = useAuth();
+  const [avgRating, setAvgRating] = useState<{
+    avg: number;
+    count: number;
+  } | null>(null);
+  const [userRating, setUserRating] = useState<number | null>(null);
+  const [ratingLoading, setRatingLoading] = useState(false);
 
   const [place, setPlace] = useState<Place | undefined>(undefined);
   const [loadingPlace, setLoadingPlace] = useState(true);
   const [imageUrl, setImageUrl] = useState<string | null>(null);
 
-  // ✅ CAMBIO 2: fallback a placeData para lugares OSM
   useEffect(() => {
     fetchPlaces().then((data) => {
       const found = data.find((p) => p.id === id);
@@ -133,11 +187,31 @@ export default function PlaceDetail() {
       }
       setLoadingPlace(false);
     });
-  }, [id]);
+  }, [id, placeData]);
+
+  useEffect(() => {
+    if (!id) return;
+    getPlaceAvgRating(id).then(setAvgRating);
+    if (user) getUserRating(id).then(setUserRating);
+  }, [id, user]);
 
   useEffect(() => {
     if (place) getPlaceImage(place.type).then(setImageUrl);
   }, [place]);
+
+  const handleRate = async (rating: number) => {
+    if (!user) {
+      router.push("/auth");
+      return;
+    }
+    setRatingLoading(true);
+    const ok = await submitRating(id, rating);
+    if (ok) {
+      setUserRating(rating);
+      getPlaceAvgRating(id).then(setAvgRating);
+    }
+    setRatingLoading(false);
+  };
 
   if (loadingPlace) {
     return (
@@ -205,14 +279,16 @@ export default function PlaceDetail() {
         style={styles.scroll}
         contentContainerStyle={styles.scrollContent}
       >
-        {place.rating && (
-          <>
-            <View style={styles.section}>
-              <StarRating rating={place.rating} />
-            </View>
-            <View style={styles.divider} />
-          </>
-        )}
+        <View style={styles.section}>
+          <StarRating
+            rating={avgRating?.avg ?? place.rating ?? 0}
+            count={avgRating?.count}
+            userRating={userRating}
+            onRate={handleRate}
+            loading={ratingLoading}
+          />
+        </View>
+        <View style={styles.divider} />
         {place.description && (
           <>
             <View style={styles.section}>
@@ -258,7 +334,6 @@ export default function PlaceDetail() {
         </View>
       </ScrollView>
 
-      {/* ✅ CAMBIO 3: botón CTA navega a reservas */}
       <View style={styles.ctaContainer}>
         <TouchableOpacity
           style={[styles.ctaBtn, { backgroundColor: cfg.color }]}
