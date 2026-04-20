@@ -1,3 +1,4 @@
+import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import {
@@ -38,7 +39,7 @@ export default function MyBookingsScreen() {
     <View style={styles.root}>
       <View style={[styles.header, { paddingTop: insets.top + 8 }]}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
-          <Text style={styles.backBtnText}>←</Text>
+          <Ionicons name="chevron-back" size={22} color="#374151" />
         </TouchableOpacity>
         <Text style={styles.title}>Mis reservas</Text>
       </View>
@@ -58,7 +59,8 @@ export default function MyBookingsScreen() {
             style={styles.exploreBtn}
             onPress={() => router.push("/")}
           >
-            <Text style={styles.exploreBtnText}>Explorar el mapa →</Text>
+            <Text style={styles.exploreBtnText}>Explorar el mapa</Text>
+            <Ionicons name="chevron-forward" size={18} color="white" />
           </TouchableOpacity>
         </View>
       ) : (

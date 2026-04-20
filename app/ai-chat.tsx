@@ -1,16 +1,17 @@
+import { Ionicons } from "@expo/vector-icons";
 import * as Location from "expo-location";
 import { useRouter } from "expo-router";
 import { useEffect, useRef, useState } from "react";
 import {
-  ActivityIndicator,
-  FlatList,
-  KeyboardAvoidingView,
-  Platform,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
+    ActivityIndicator,
+    FlatList,
+    KeyboardAvoidingView,
+    Platform,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { MARKER_CONFIG } from "../components/MapView";
@@ -376,7 +377,7 @@ REGLAS IMPORTANTES
       {/* Header */}
       <View style={[styles.header, { paddingTop: insets.top + 8 }]}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
-          <Text style={styles.backBtnText}>←</Text>
+          <Ionicons name="chevron-back" size={22} color="#374151" />
         </TouchableOpacity>
         <View style={styles.headerInfo}>
           <Text style={styles.headerTitle}>🤖 Asistente SportMap</Text>
@@ -489,7 +490,7 @@ REGLAS IMPORTANTES
           disabled={!input.trim() || loading}
           activeOpacity={0.85}
         >
-          <Text style={styles.sendBtnText}>→</Text>
+          <Ionicons name="chevron-forward" size={18} color="white" />
         </TouchableOpacity>
       </View>
     </KeyboardAvoidingView>

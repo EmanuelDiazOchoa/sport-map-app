@@ -1,11 +1,12 @@
 import PlaceCard from "@/components/PlaceCard";
+import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import {
-  FlatList,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
+    FlatList,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useAuth } from "../../hooks/useAuth";
@@ -71,7 +72,8 @@ export default function ProfileScreen() {
             style={styles.exploreBtn}
             onPress={() => router.push("/")}
           >
-            <Text style={styles.exploreBtnText}>Explorar el mapa →</Text>
+            <Text style={styles.exploreBtnText}>Explorar el mapa</Text>
+            <Ionicons name="chevron-forward" size={18} color="white" />
           </TouchableOpacity>
         </View>
       ) : (

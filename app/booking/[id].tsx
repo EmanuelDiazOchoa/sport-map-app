@@ -1,3 +1,4 @@
+import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useState } from "react";
 import {
@@ -133,8 +134,9 @@ export default function BookingScreen() {
           onPress={() => router.push("/my-bookings")}
         >
           <Text style={{ color: cfg.color, fontWeight: "700", fontSize: 14 }}>
-            Ver mis reservas →
+            Ver mis reservas
           </Text>
+          <Ionicons name="chevron-forward" size={18} color={cfg.color} />
         </TouchableOpacity>
       </View>
     );
@@ -150,7 +152,7 @@ export default function BookingScreen() {
         ]}
       >
         <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
-          <Text style={styles.backBtnText}>←</Text>
+          <Ionicons name="chevron-back" size={22} color="#374151" />
         </TouchableOpacity>
         <View style={styles.headerInfo}>
           <Text style={styles.headerEmoji}>{cfg.emoji}</Text>

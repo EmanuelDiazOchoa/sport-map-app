@@ -145,7 +145,7 @@ export default function WeatherScreen() {
       {/* Header */}
       <View style={[styles.header, { paddingTop: insets.top + 8 }]}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
-          <Ionicons name="chevron-forward" size={18} color="white" />
+          <Ionicons name="chevron-back" size={22} color="#374151" />
         </TouchableOpacity>
         <View style={styles.headerInfo}>
           <Text style={styles.headerTitle}>🌤️ Pronóstico</Text>
