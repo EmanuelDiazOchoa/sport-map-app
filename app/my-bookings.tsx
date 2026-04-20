@@ -2,12 +2,12 @@ import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import {
-    ActivityIndicator,
-    FlatList,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  ActivityIndicator,
+  FlatList,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { MARKER_CONFIG } from "../components/MapView";
@@ -56,7 +56,10 @@ export default function MyBookingsScreen() {
             Reservá un lugar desde la pantalla de detalle.
           </Text>
           <TouchableOpacity
-            style={styles.exploreBtn}
+            style={[
+              styles.exploreBtn,
+              { flexDirection: "row", alignItems: "center", gap: 6 },
+            ]}
             onPress={() => router.push("/")}
           >
             <Text style={styles.exploreBtnText}>Explorar el mapa</Text>

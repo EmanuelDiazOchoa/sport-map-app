@@ -2,12 +2,12 @@ import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useState } from "react";
 import {
-    ActivityIndicator,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  ActivityIndicator,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { MARKER_CONFIG } from "../../components/MapView";
@@ -130,13 +130,19 @@ export default function BookingScreen() {
           <Text style={styles.confirmBtnText}>Volver al mapa</Text>
         </TouchableOpacity>
         <TouchableOpacity
-          style={{ marginTop: 12, padding: 8 }}
+          style={{
+            marginTop: 12,
+            padding: 8,
+            flexDirection: "row",
+            alignItems: "center",
+            gap: 4,
+          }}
           onPress={() => router.push("/my-bookings")}
         >
           <Text style={{ color: cfg.color, fontWeight: "700", fontSize: 14 }}>
             Ver mis reservas
           </Text>
-          <Ionicons name="chevron-forward" size={18} color={cfg.color} />
+          <Ionicons name="chevron-forward" size={16} color={cfg.color} />
         </TouchableOpacity>
       </View>
     );

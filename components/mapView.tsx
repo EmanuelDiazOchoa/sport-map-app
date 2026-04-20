@@ -3,13 +3,13 @@ import * as Location from "expo-location";
 import { useRouter } from "expo-router";
 import React, { useEffect, useRef, useState } from "react";
 import {
-    ActivityIndicator,
-    Animated,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  ActivityIndicator,
+  Animated,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
 import WebView from "react-native-webview";
 import { fetchNearbyPlaces } from "../services/overpass";
@@ -392,8 +392,12 @@ export default function CustomMapView() {
             }}
             activeOpacity={0.85}
           >
-            <Text style={styles.detailBtnText}>Ver detalle completo</Text>
-            <Ionicons name="chevron-forward" size={18} color="white" />
+            <View
+              style={{ flexDirection: "row", alignItems: "center", gap: 6 }}
+            >
+              <Text style={styles.detailBtnText}>Ver detalle completo</Text>
+              <Ionicons name="chevron-forward" size={18} color="white" />
+            </View>
           </TouchableOpacity>
         </Animated.View>
       )}

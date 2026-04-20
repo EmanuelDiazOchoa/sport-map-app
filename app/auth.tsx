@@ -1,14 +1,14 @@
 import { useRouter } from "expo-router";
 import { useState } from "react";
 import {
-    ActivityIndicator,
-    KeyboardAvoidingView,
-    Platform,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  ActivityIndicator,
+  KeyboardAvoidingView,
+  Platform,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from "react-native";
 import { useAuth } from "../hooks/useAuth";
 
@@ -46,6 +46,7 @@ export default function AuthScreen() {
       } else {
         await signUp(email, password);
         setSuccess("¡Cuenta creada! Revisá tu email para confirmar.");
+        setTimeout(() => setMode("login"), 2500);
       }
     } catch (e: any) {
       setError(e.message ?? "Ocurrió un error.");

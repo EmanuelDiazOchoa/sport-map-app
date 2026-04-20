@@ -2,22 +2,22 @@ import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import {
-    ActivityIndicator,
-    Image,
-    ScrollView,
-    StatusBar,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  ActivityIndicator,
+  Image,
+  ScrollView,
+  StatusBar,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
 import { MARKER_CONFIG } from "../../components/MapView";
 import { useAuth } from "../../hooks/useAuth";
 import { useFavorites } from "../../hooks/useFavorites";
 import {
-    getPlaceAvgRating,
-    getUserRating,
-    submitRating,
+  getPlaceAvgRating,
+  getUserRating,
+  submitRating,
 } from "../../services/ratings";
 import { fetchPlaces } from "../../services/supabasePlaces";
 import { getPlaceImage } from "../../services/unsplash";
@@ -226,11 +226,17 @@ export default function PlaceDetail() {
     return (
       <View style={styles.centered}>
         <Text style={styles.notFoundText}>Lugar no encontrado</Text>
-        <TouchableOpacity onPress={() => router.back()}>
-          <Ionicons name="chevron-back" size={22} color="#374151" />
-          <Text style={{ color: "#2563EB", marginTop: 12, fontWeight: "600" }}>
-            Volver
-          </Text>
+        <TouchableOpacity
+          onPress={() => router.back()}
+          style={{
+            flexDirection: "row",
+            alignItems: "center",
+            gap: 4,
+            marginTop: 12,
+          }}
+        >
+          <Ionicons name="chevron-back" size={18} color="#2563EB" />
+          <Text style={{ color: "#2563EB", fontWeight: "600" }}>Volver</Text>
         </TouchableOpacity>
       </View>
     );

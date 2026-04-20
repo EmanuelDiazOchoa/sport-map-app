@@ -2,11 +2,11 @@ import PlaceCard from "@/components/PlaceCard";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import {
-    FlatList,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  FlatList,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useAuth } from "../../hooks/useAuth";
@@ -69,7 +69,10 @@ export default function ProfileScreen() {
             Tocá el corazón en cualquier lugar para guardarlo acá.
           </Text>
           <TouchableOpacity
-            style={styles.exploreBtn}
+            style={[
+              styles.exploreBtn,
+              { flexDirection: "row", alignItems: "center", gap: 6 },
+            ]}
             onPress={() => router.push("/")}
           >
             <Text style={styles.exploreBtnText}>Explorar el mapa</Text>
