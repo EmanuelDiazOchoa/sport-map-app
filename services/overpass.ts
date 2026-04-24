@@ -169,10 +169,12 @@ export async function fetchNearbyPlaces(
   const SERVERS = [
     "https://overpass-api.de/api/interpreter",
     "https://overpass.kumi.systems/api/interpreter",
+    "https://overpass.openstreetmap.ru/api/interpreter",
   ];
 
   for (const server of SERVERS) {
     try {
+      console.log(`Intentando ${server}...`);
       const controller = new AbortController();
       const timeout = setTimeout(() => controller.abort(), 10000);
 
@@ -184,16 +186,20 @@ export async function fetchNearbyPlaces(
       clearTimeout(timeout);
 
       const text = await res.text();
-      if (!text.startsWith("{") && !text.startsWith("[")) continue;
+      console.log(
+        `Respuesta de ${server}: status ${res.status}, primeros chars: ${text.slice(0, 50)}`,
+      );
+
+      if (!text.startsWith("{") && !text.startsWith("[")) {
+        console.warn(`${server} devolvió formato inválido`);
+        continue;
+      }
 
       const json = JSON.parse(text);
-
       const places: Place[] = json.elements
-        .filter((el: any) => {
-          const lat = el.lat ?? el.center?.lat;
-          const lon = el.lon ?? el.center?.lon;
-          return lat && lon;
-        })
+        .filter(
+          (el: any) => (el.lat ?? el.center?.lat) && (el.lon ?? el.center?.lon),
+        )
         .map((el: any): Place => {
           const tags = el.tags ?? {};
           const type = inferType(tags);
@@ -210,12 +216,10 @@ export async function fetchNearbyPlaces(
           };
         });
 
-      console.log(
-        `Overpass: ${places.length} lugares cargados desde ${server}`,
-      );
+      console.log(`✅ ${places.length} lugares cargados desde ${server}`);
       return dedup(places);
-    } catch (err) {
-      console.warn(`Servidor ${server} falló, probando siguiente...`);
+    } catch (err: any) {
+      console.warn(`${server} falló:`, err?.message ?? err);
       continue;
     }
   }
