@@ -165,41 +165,49 @@ export async function fetchNearbyPlaces(
   lat: number,
   lng: number,
 ): Promise<Place[]> {
-  try {
-    const res = await fetch("https://overpass-api.de/api/interpreter", {
-      method: "POST",
-      body: buildQuery(lat, lng),
-    });
+  const SERVERS = [
+    "https://overpass-api.de/api/interpreter",
+    "https://overpass.kumi.systems/api/interpreter",
+  ];
 
-    const text = await res.text();
-    if (!text.startsWith("{") && !text.startsWith("[")) {
-      console.warn("Overpass respondió con formato inesperado");
-      return [];
-    }
+  for (const server of SERVERS) {
+    try {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 8000); // 8 seg máximo
 
-    const json = JSON.parse(text);
-
-    const places: Place[] = json.elements
-      .filter(
-        (el: any) => (el.lat ?? el.center?.lat) && (el.lon ?? el.center?.lon),
-      )
-      .map((el: any): Place => {
-        const tags = el.tags ?? {};
-        const type = inferType(tags);
-        return {
-          id: `osm-${el.id}`,
-          name: inferName(tags, type),
-          latitude: el.lat ?? el.center.lat,
-          longitude: el.lon ?? el.center.lon,
-          type,
-          address: tags["addr:street"] ?? undefined,
-          description: tags.description ?? undefined,
-        };
+      const res = await fetch(server, {
+        method: "POST",
+        body: buildQuery(lat, lng),
+        signal: controller.signal,
       });
+      clearTimeout(timeout);
 
-    return dedup(places);
-  } catch (err) {
-    console.error("Overpass error:", err);
-    return [];
+      const text = await res.text();
+      if (!text.startsWith("{") && !text.startsWith("[")) continue;
+
+      const json = JSON.parse(text);
+      const places: Place[] = json.elements
+        .filter(
+          (el: any) => (el.lat ?? el.center?.lat) && (el.lon ?? el.center?.lon),
+        )
+        .map((el: any): Place => {
+          const tags = el.tags ?? {};
+          const type = inferType(tags);
+          return {
+            id: `osm-${el.id}`,
+            name: inferName(tags, type),
+            latitude: el.lat ?? el.center.lat,
+            longitude: el.lon ?? el.center.lon,
+            type,
+            address: tags["addr:street"] ?? undefined,
+            description: tags.description ?? undefined,
+          };
+        });
+
+      return dedup(places);
+    } catch {
+      continue;
+    }
   }
+  return [];
 }
