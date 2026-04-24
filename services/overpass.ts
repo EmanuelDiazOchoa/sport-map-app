@@ -1,5 +1,17 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { MARKER_CONFIG } from "../components/MapView";
 import { Place } from "../types/place";
+
+type OsmTags = {
+  sport?: string;
+  leisure?: string;
+  amenity?: string;
+  name?: string;
+  ["name:es"]?: string;
+  ["addr:street"]?: string;
+  ["addr:housenumber"]?: string;
+  description?: string;
+};
 
 const TAG_QUERIES = [
   { key: "leisure", value: "pitch", type: "football" },
@@ -47,18 +59,44 @@ const TAG_QUERIES = [
   { key: "sport", value: "multi", type: "gym" },
 ];
 
-function buildQuery(lat: number, lng: number, radius = 8000): string {
-  const filters = TAG_QUERIES.map(
-    ({ key, value }) => `
-    node["${key}"="${value}"](around:${radius},${lat},${lng});
-    way["${key}"="${value}"](around:${radius},${lat},${lng});
-    relation["${key}"="${value}"](around:${radius},${lat},${lng});
-  `,
-  ).join("\n");
-  return `[out:json][timeout:30];(${filters});out center;`;
+function buildQuery(lat: number, lng: number): string {
+  return `[out:json][timeout:25];
+(
+  node["leisure"="pitch"](around:4000,${lat},${lng});
+  node["sport"](around:4000,${lat},${lng});
+  node["amenity"="gym"](around:4000,${lat},${lng});
+  node["leisure"="sports_centre"](around:4000,${lat},${lng});
+);
+out;`;
 }
 
-function inferType(tags: any): Place["type"] {
+function mapToSport(tags: OsmTags): Place["type"] {
+  const sport = tags.sport?.toLowerCase();
+
+  if (sport === "soccer") return "football";
+  if (sport === "padel") return "padel";
+  if (sport === "tennis") return "tennis";
+  if (sport === "basketball") return "basketball";
+  if (sport === "swimming") return "swimming";
+  if (sport === "volleyball") return "volleyball";
+  if (sport === "rugby") return "rugby";
+  if (sport === "hockey") return "hockey";
+  if (sport === "boxing") return "boxing";
+
+  if (tags.amenity === "gym") return "gym";
+
+  if (sport && MARKER_CONFIG[sport]) {
+    return sport as Place["type"];
+  }
+
+  if (tags.leisure === "pitch") return "football";
+  if (tags.leisure === "sports_centre")
+    return (sport as Place["type"]) || "gym";
+
+  return "other";
+}
+
+function inferType(tags: OsmTags): Place["type"] {
   const sport = tags.sport;
   const leisure = tags.leisure;
   const amenity = tags.amenity;
@@ -111,7 +149,7 @@ function inferType(tags: any): Place["type"] {
   return "other";
 }
 
-function inferName(tags: any, type: Place["type"]): string {
+function inferName(tags: OsmTags, type: Place["type"]): string {
   if (tags.name) return tags.name;
   if (tags["name:es"]) return tags["name:es"];
 
@@ -185,7 +223,7 @@ export async function fetchNearbyPlaces(
     try {
       console.log(`Intentando ${server}...`);
       const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 15000);
+      const timeout = setTimeout(() => controller.abort(), 25000);
 
       const res = await fetch(server, {
         method: "POST",
@@ -219,13 +257,12 @@ export async function fetchNearbyPlaces(
         )
         .map((el: any): Place => {
           const tags = el.tags ?? {};
-          const type = inferType(tags);
           return {
             id: `osm-${el.id}`,
-            name: inferName(tags, type),
+            name: inferName(tags, mapToSport(tags)),
             latitude: el.lat ?? el.center.lat,
             longitude: el.lon ?? el.center.lon,
-            type,
+            type: mapToSport(el.tags),
             address: tags["addr:street"]
               ? `${tags["addr:street"]} ${tags["addr:housenumber"] ?? ""}`.trim()
               : undefined,

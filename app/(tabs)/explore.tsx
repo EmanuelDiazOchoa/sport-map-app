@@ -9,10 +9,9 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { MARKER_CONFIG } from "../../components/MapView";
 
-const SPORTS = Object.entries(MARKER_CONFIG).map(([key, val]) => ({
-  key,
-  ...val,
-}));
+const SPORTS = Object.entries(MARKER_CONFIG)
+  .map(([key, val]) => ({ key, ...val }))
+  .sort((a, b) => a.label.localeCompare(b.label));
 
 export default function ExploreScreen() {
   const router = useRouter();
@@ -22,10 +21,11 @@ export default function ExploreScreen() {
     <View style={styles.root}>
       <View style={[styles.header, { paddingTop: insets.top + 8 }]}>
         <Text style={styles.title}>Explorar deportes</Text>
-        <Text style={styles.subtitle}>
-          Seleccioná un deporte para ver lugares cerca tuyo
-        </Text>
       </View>
+
+      <Text style={{ paddingHorizontal: 20, marginTop: 8 }}>
+        Elegí un deporte y te mostramos lugares reales cerca tuyo
+      </Text>
 
       <ScrollView contentContainerStyle={styles.grid}>
         {SPORTS.map((sport) => (

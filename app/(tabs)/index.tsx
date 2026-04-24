@@ -1,12 +1,7 @@
 import * as Location from "expo-location";
-import { useRouter } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useState } from "react";
-import {
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View
-} from "react-native";
+import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import CustomMapView from "../../components/MapView";
 import SplashLoader from "../../components/SplashLoader";
@@ -83,6 +78,7 @@ async function fetchWeatherData(
 export default function HomeScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
+  const { filter } = useLocalSearchParams();
   const [weatherData, setWeatherData] = useState<WeatherData | null>(null);
   const [splashDone, setSplashDone] = useState(false);
 
@@ -106,9 +102,7 @@ export default function HomeScreen() {
     <View style={styles.container}>
       {!splashDone && <SplashLoader onFinish={() => setSplashDone(true)} />}
 
-      {/* HEADER PRINCIPAL */}
       <View style={[styles.header, { paddingTop: insets.top + 8 }]}>
-        {/* Fila 1: título + botón IA */}
         <View style={styles.headerRow}>
           <Text style={styles.headerEmoji}>🏟️</Text>
           <View style={{ flex: 1 }}>
@@ -128,7 +122,6 @@ export default function HomeScreen() {
           </TouchableOpacity>
         </View>
 
-        {/* Fila 2: pronóstico 3 días */}
         {weatherData && (
           <TouchableOpacity
             style={styles.forecastStrip}
@@ -170,7 +163,7 @@ export default function HomeScreen() {
         )}
       </View>
 
-      <CustomMapView />
+      <CustomMapView initialFilter={filter as string} />
     </View>
   );
 }

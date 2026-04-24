@@ -175,7 +175,6 @@ export default function BookingScreen() {
         style={styles.scroll}
         contentContainerStyle={styles.scrollContent}
       >
-        {/* Días */}
         <Text style={styles.sectionLabel}>Seleccioná el día</Text>
         <ScrollView
           horizontal
@@ -221,7 +220,6 @@ export default function BookingScreen() {
           })}
         </ScrollView>
 
-        {/* Horarios */}
         <Text style={styles.sectionLabel}>Seleccioná el horario</Text>
         <View style={styles.slotsGrid}>
           {TIME_SLOTS.map((slot) => {
@@ -249,7 +247,6 @@ export default function BookingScreen() {
           })}
         </View>
 
-        {/* Resumen */}
         {selectedSlot && (
           <View
             style={[
@@ -278,7 +275,6 @@ export default function BookingScreen() {
         )}
       </ScrollView>
 
-      {/* Botón confirmar */}
       <View
         style={[styles.ctaContainer, { paddingBottom: insets.bottom + 12 }]}
       >

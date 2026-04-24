@@ -216,11 +216,17 @@ function StarRating({ rating }: { rating: number }) {
   );
 }
 
-export default function CustomMapView() {
+export default function CustomMapView({
+  initialFilter,
+}: {
+  initialFilter?: string;
+}) {
   const router = useRouter();
   const [coords, setCoords] = useState<Coords | null>(null);
   const [places, setPlaces] = useState<Place[]>([]);
-  const [filter, setFilter] = useState<FilterType>("all");
+  const [filter, setFilter] = useState<FilterType>(
+    (initialFilter as FilterType) || "all",
+  );
   const [selectedPlace, setSelectedPlace] = useState<Place | null>(null);
   const [loading, setLoading] = useState(true);
   const slideAnim = useRef(new Animated.Value(300)).current;
@@ -290,6 +296,21 @@ export default function CustomMapView() {
   const filtered =
     filter === "all" ? places : places.filter((p) => p.type === filter);
   const html = coords && !loading ? buildHTML(coords, filtered) : null;
+
+  // Estado vacío cuando hay filtro aplicado y no hay lugares
+  if (initialFilter && filtered.length === 0 && !loading) {
+    return (
+      <View style={styles.emptyState}>
+        <Text style={styles.emptyEmoji}>😕</Text>
+        <Text style={styles.emptyTitle}>
+          No hay lugares de este deporte cerca
+        </Text>
+        <Text style={styles.emptySubtitle}>
+          Prueba con otro deporte o amplía tu búsqueda
+        </Text>
+      </View>
+    );
+  }
 
   if (!html) {
     return (
@@ -490,4 +511,25 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   detailBtnText: { color: "white", fontWeight: "700", fontSize: 15 },
+  emptyState: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#F8FAFC",
+    paddingHorizontal: 40,
+  },
+  emptyEmoji: { fontSize: 48, marginBottom: 16 },
+  emptyTitle: {
+    fontSize: 18,
+    fontWeight: "700",
+    color: "#111827",
+    textAlign: "center",
+    marginBottom: 8,
+  },
+  emptySubtitle: {
+    fontSize: 14,
+    color: "#6B7280",
+    textAlign: "center",
+    lineHeight: 20,
+  },
 });
