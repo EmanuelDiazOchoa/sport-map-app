@@ -46,14 +46,15 @@ const TAG_QUERIES = [
   { key: "sport", value: "multi", type: "gym" },
 ];
 
-function buildQuery(lat: number, lng: number, radius = 5000): string {
+function buildQuery(lat: number, lng: number, radius = 8000): string {
   const filters = TAG_QUERIES.map(
     ({ key, value }) => `
     node["${key}"="${value}"](around:${radius},${lat},${lng});
     way["${key}"="${value}"](around:${radius},${lat},${lng});
+    relation["${key}"="${value}"](around:${radius},${lat},${lng});
   `,
   ).join("\n");
-  return `[out:json][timeout:25];(${filters});out center;`;
+  return `[out:json][timeout:30];(${filters});out center;`;
 }
 
 function inferType(tags: any): Place["type"] {
@@ -173,7 +174,7 @@ export async function fetchNearbyPlaces(
   for (const server of SERVERS) {
     try {
       const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 8000); // 8 seg máximo
+      const timeout = setTimeout(() => controller.abort(), 10000);
 
       const res = await fetch(server, {
         method: "POST",
@@ -186,10 +187,13 @@ export async function fetchNearbyPlaces(
       if (!text.startsWith("{") && !text.startsWith("[")) continue;
 
       const json = JSON.parse(text);
+
       const places: Place[] = json.elements
-        .filter(
-          (el: any) => (el.lat ?? el.center?.lat) && (el.lon ?? el.center?.lon),
-        )
+        .filter((el: any) => {
+          const lat = el.lat ?? el.center?.lat;
+          const lon = el.lon ?? el.center?.lon;
+          return lat && lon;
+        })
         .map((el: any): Place => {
           const tags = el.tags ?? {};
           const type = inferType(tags);
@@ -199,15 +203,22 @@ export async function fetchNearbyPlaces(
             latitude: el.lat ?? el.center.lat,
             longitude: el.lon ?? el.center.lon,
             type,
-            address: tags["addr:street"] ?? undefined,
+            address: tags["addr:street"]
+              ? `${tags["addr:street"]} ${tags["addr:housenumber"] ?? ""}`.trim()
+              : undefined,
             description: tags.description ?? undefined,
           };
         });
 
+      console.log(
+        `Overpass: ${places.length} lugares cargados desde ${server}`,
+      );
       return dedup(places);
-    } catch {
+    } catch (err) {
+      console.warn(`Servidor ${server} falló, probando siguiente...`);
       continue;
     }
   }
+  console.warn("Todos los servidores Overpass fallaron");
   return [];
 }
