@@ -63,7 +63,7 @@ function buildQuery(lat: number, lng: number): string {
   return `[out:json][timeout:25];
 (
   node["leisure"="pitch"](around:4000,${lat},${lng});
-  node["sport"](around:4000,${lat},${lng});
+  node["sport"~"padel|tennis|soccer|basketball"](around:4000,${lat},${lng});
   node["amenity"="gym"](around:4000,${lat},${lng});
   node["leisure"="sports_centre"](around:4000,${lat},${lng});
 );
@@ -93,59 +93,6 @@ function mapToSport(tags: OsmTags): Place["type"] {
   if (tags.leisure === "sports_centre")
     return (sport as Place["type"]) || "gym";
 
-  return "other";
-}
-
-function inferType(tags: OsmTags): Place["type"] {
-  const sport = tags.sport;
-  const leisure = tags.leisure;
-  const amenity = tags.amenity;
-
-  if (sport === "padel") return "padel";
-  if (sport === "tennis") return "tennis";
-  if (sport === "soccer" || sport === "football") return "football";
-  if (sport === "basketball") return "basketball";
-  if (sport === "volleyball") return "volleyball";
-  if (sport === "cycling") return "cycling";
-  if (sport === "hockey") return "hockey";
-  if (sport === "rugby") return "rugby";
-  if (sport === "boxing") return "boxing";
-  if (sport === "judo") return "judo";
-  if (sport === "taekwondo") return "taekwondo";
-  if (sport === "wrestling") return "wrestling";
-  if (sport === "fencing") return "fencing";
-  if (sport === "archery") return "archery";
-  if (sport === "weightlifting") return "weightlifting";
-  if (sport === "gymnastics") return "gymnastics";
-  if (sport === "triathlon") return "triathlon";
-  if (sport === "equestrian") return "equestrian";
-  if (sport === "handball") return "handball";
-  if (sport === "table_tennis") return "table_tennis";
-  if (sport === "badminton") return "badminton";
-  if (sport === "rowing") return "rowing";
-  if (sport === "canoe" || sport === "kayak") return "kayak";
-  if (sport === "martial_arts") return "martial_arts";
-  if (sport === "athletics" || leisure === "track") return "athletics";
-  if (sport === "running" || leisure === "park") return "running";
-  if (sport === "climbing") return "climbing";
-  if (sport === "skateboard" || leisure === "skateboard_park")
-    return "skateboarding";
-  if (
-    sport === "swimming" ||
-    amenity === "swimming_pool" ||
-    leisure === "swimming_pool"
-  )
-    return "swimming";
-  if (
-    sport === "multi" ||
-    leisure === "sports_centre" ||
-    amenity === "sports_centre" ||
-    leisure === "fitness_station" ||
-    amenity === "gym"
-  )
-    return "gym";
-  if (leisure === "pitch") return "football";
-  if (leisure === "stadium") return "athletics";
   return "other";
 }
 
@@ -257,12 +204,13 @@ export async function fetchNearbyPlaces(
         )
         .map((el: any): Place => {
           const tags = el.tags ?? {};
+          const type = mapToSport(tags);
           return {
             id: `osm-${el.id}`,
-            name: inferName(tags, mapToSport(tags)),
+            name: inferName(tags, type),
             latitude: el.lat ?? el.center.lat,
             longitude: el.lon ?? el.center.lon,
-            type: mapToSport(el.tags),
+            type,
             address: tags["addr:street"]
               ? `${tags["addr:street"]} ${tags["addr:housenumber"] ?? ""}`.trim()
               : undefined,
