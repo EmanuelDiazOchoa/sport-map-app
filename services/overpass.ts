@@ -1,3 +1,4 @@
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Place } from "../types/place";
 
 const TAG_QUERIES = [
@@ -166,21 +167,33 @@ export async function fetchNearbyPlaces(
   lat: number,
   lng: number,
 ): Promise<Place[]> {
-  const SERVERS = [
+  const cacheKey = `places_${lat.toFixed(2)}_${lng.toFixed(2)}`;
+  const cached = await AsyncStorage.getItem(cacheKey);
+
+  if (cached) {
+    console.log("⚡ usando cache para", cacheKey);
+    return JSON.parse(cached);
+  }
+
+  const OVERPASS_SERVERS = [
     "https://overpass-api.de/api/interpreter",
     "https://overpass.kumi.systems/api/interpreter",
     "https://overpass.openstreetmap.ru/api/interpreter",
   ];
 
-  for (const server of SERVERS) {
+  for (const server of OVERPASS_SERVERS) {
     try {
       console.log(`Intentando ${server}...`);
       const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 10000);
+      const timeout = setTimeout(() => controller.abort(), 15000);
 
       const res = await fetch(server, {
         method: "POST",
-        body: buildQuery(lat, lng),
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+          Accept: "application/json",
+        },
+        body: `data=${encodeURIComponent(buildQuery(lat, lng))}`,
         signal: controller.signal,
       });
       clearTimeout(timeout);
@@ -189,6 +202,10 @@ export async function fetchNearbyPlaces(
       console.log(
         `Respuesta de ${server}: status ${res.status}, primeros chars: ${text.slice(0, 50)}`,
       );
+
+      if (text.startsWith("<!DOCTYPE")) {
+        throw new Error("Respuesta HTML inválida");
+      }
 
       if (!text.startsWith("{") && !text.startsWith("[")) {
         console.warn(`${server} devolvió formato inválido`);
@@ -216,10 +233,17 @@ export async function fetchNearbyPlaces(
           };
         });
 
-      console.log(`✅ ${places.length} lugares cargados desde ${server}`);
-      return dedup(places);
+      const dedupedPlaces = dedup(places);
+      console.log(
+        `✅ ${dedupedPlaces.length} lugares cargados desde ${server}`,
+      );
+
+      await AsyncStorage.setItem(cacheKey, JSON.stringify(dedupedPlaces));
+
+      return dedupedPlaces;
     } catch (err: any) {
       console.warn(`${server} falló:`, err?.message ?? err);
+      await new Promise((r) => setTimeout(r, 1500));
       continue;
     }
   }
