@@ -235,23 +235,27 @@ export default function AIChatScreen() {
     setLoading(true);
 
     try {
-      const placesContext = allPlaces
+      const INDOOR_TYPES = new Set([
+        "gym",
+        "swimming",
+        "boxing",
+        "martial_arts",
+        "crossfit",
+        "simulator_f1",
+        "simulator_flight",
+        "simulator_rally",
+        "simulator_golf",
+        "simulator_vr",
+        "simulator_shooting",
+      ]);
+
+      const placesToSend = allPlaces.slice(0, 60);
+
+      const placesContext = placesToSend
         .map((p) => {
           const cfg = MARKER_CONFIG[p.type] ?? MARKER_CONFIG.other;
-          const isIndoor = [
-            "gym",
-            "swimming",
-            "boxing",
-            "martial_arts",
-            "crossfit",
-            "simulator_f1",
-            "simulator_flight",
-            "simulator_rally",
-            "simulator_golf",
-            "simulator_vr",
-            "simulator_shooting",
-          ].includes(p.type);
-          return `- ID:${p.id} | ${p.name} (${cfg.label}) | ${isIndoor ? "INDOOR" : "OUTDOOR"} | ${p.description ?? "Sin descripción"} | Dirección: ${p.address ?? "Sin dirección"} | Precio: ${p.price ?? "Sin info"} | Horario: ${p.schedule ?? "Sin info"}`;
+          const indoor = INDOOR_TYPES.has(p.type) ? "IN" : "OUT";
+          return `${p.id}|${p.name}|${cfg.label}|${indoor}|${p.address ?? "-"}`;
         })
         .join("\n");
 
@@ -259,66 +263,19 @@ export default function AIChatScreen() {
         ? `Clima actual: ${weather.temp}°C, ${weather.condition}. ${weather.isOutdoorFriendly ? "Buen clima para actividades al aire libre." : "Clima no favorable para actividades al aire libre — preferir opciones INDOOR."}`
         : "Clima: sin datos disponibles.";
 
-      const osmCount = allPlaces.filter(
-        (p) => !p.id.startsWith("osm-") === false,
-      ).length;
-
-      const systemPrompt = `Sos SportMap AI, un asistente deportivo experto integrado en una app de espacios deportivos con mapa interactivo global.
+      const systemPrompt = `Sos SportMap AI, asistente deportivo en español rioplatense.
 
 ${weatherContext}
-Momento del día: ${timeOfDay}
+Momento: ${timeOfDay}
 
-LUGARES DISPONIBLES EN EL MAPA AHORA (${allPlaces.length} lugares cargados):
+LUGARES (ID|nombre|tipo|IN/OUT|dirección):
 ${placesContext}
 
-═══════════════════════════════
-REGLA MÁS IMPORTANTE — NUNCA IGNORAR
-═══════════════════════════════
-
-SIEMPRE que el usuario pregunte por un deporte o lugar:
-1. Primero buscá en la lista de lugares disponibles arriba
-2. Si encontrás coincidencias → recomendá esos lugares con LUGARES_IDS
-3. Si NO encontrás coincidencias exactas → decí "no tengo ese deporte cargado en este momento, pero el mapa tiene ${allPlaces.length} lugares — te recomiendo filtrar por ese deporte directamente en el mapa"
-4. NUNCA digas "no hay canchas" o "no hay lugares" de forma definitiva — el mapa tiene datos en tiempo real de OpenStreetMap y puede tener más lugares que los que yo veo
-
-═══════════════════════════════
-TUS CAPACIDADES
-═══════════════════════════════
-
-1. BÚSQUEDA DE LUGARES
-- Buscá en la lista de arriba por tipo de deporte
-- Considerá clima (outdoor/indoor), horario y momento del día
-- Si hay lugares → recomendá 1 a 3 con LUGARES_IDS: id1,id2,id3
-- Si no hay en mi lista → sugerí usar el filtro del mapa directamente
-
-2. CONOCIMIENTO DEPORTIVO COMPLETO
-Podés hablar sobre CUALQUIER deporte:
-- Fútbol, rugby, hockey, básquet, vóley, handball
-- Tenis, pádel, squash, bádminton, tenis de mesa
-- Natación, remo, canotaje, kayak, triatlón
-- Running, ciclismo, atletismo, escalada, skate
-- Gym, crossfit, calistenia, halterofilia
-- Boxeo, judo, taekwondo, karate, MMA, lucha, esgrima
-- Tiro con arco, equitación, gimnasia artística
-- Simuladores: F1, vuelo, rally, golf, VR, tiro
-
-Para cada deporte: reglas, técnica, equipamiento, cómo empezar, rutinas, nutrición básica.
-
-3. CONVERSACIÓN LIBRE
-Podés charlar sobre deporte en general, motivar al usuario, hablar de hábitos saludables, comparar deportes, hablar de competencias, etc.
-
-4. CLIMA Y PLANIFICACIÓN
-- Usá el clima actual para sugerir outdoor o indoor
-- Si llueve o hace mucho calor → priorizá opciones indoor
-
-═══════════════════════════════
-FORMATO DE RESPUESTA
-═══════════════════════════════
-- Español rioplatense, directo y amigable
-- Respuestas concisas — no hagas listas largas innecesarias
-- Emojis con moderación
-- Para lesiones → derivá a médico/kinesiólogo
-- Para nutrición específica → derivá a nutricionista
+REGLAS:
+- Si el usuario pide un deporte, buscá en la lista y recomendá 1-3 lugares con LUGARES_IDS: id1,id2
+- Si no hay coincidencias, decí que no tenés ese deporte pero sugerí filtrar en el mapa
+- Nunca digas "no hay lugares" de forma definitiva
+- Respuestas cortas y directas con emojis moderados
 - Última línea siempre: LUGARES_IDS: id1,id2 o LUGARES_IDS: ninguno`;
 
       const response = await fetch(
@@ -344,6 +301,7 @@ FORMATO DE RESPUESTA
       );
 
       const data = await response.json();
+      if (!data.choices) console.log("Groq error:", JSON.stringify(data));
       const fullText =
         data.choices?.[0]?.message?.content ?? "No pude procesar tu consulta.";
 

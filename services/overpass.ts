@@ -1,5 +1,5 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { MARKER_CONFIG } from "../components/MapView";
+import { MARKER_CONFIG } from "../constants/markerConfig";
 import { Place } from "../types/place";
 
 type OsmTags = {

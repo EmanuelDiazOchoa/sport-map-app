@@ -12,9 +12,12 @@ import {
   View,
 } from "react-native";
 import WebView from "react-native-webview";
+import { MARKER_CONFIG } from "../constants/markerConfig";
 import { fetchNearbyPlaces } from "../services/overpass";
 import { fetchPlaces } from "../services/supabasePlaces";
 import { Place } from "../types/place";
+
+export { MARKER_CONFIG } from "../constants/markerConfig";
 
 type Coords = { latitude: number; longitude: number };
 
@@ -58,50 +61,6 @@ type FilterType =
   | "simulator_vr"
   | "simulator_shooting"
   | "other";
-
-export const MARKER_CONFIG: Record<
-  string,
-  { color: string; emoji: string; label: string }
-> = {
-  running: { color: "#EA580C", emoji: "🏃", label: "Running" },
-  padel: { color: "#16A34A", emoji: "🎾", label: "Pádel" },
-  gym: { color: "#7C3AED", emoji: "💪", label: "Gym" },
-  football: { color: "#15803D", emoji: "⚽", label: "Fútbol" },
-  basketball: { color: "#B45309", emoji: "🏀", label: "Básquet" },
-  tennis: { color: "#0369A1", emoji: "🎾", label: "Tenis" },
-  swimming: { color: "#0891B2", emoji: "🏊", label: "Natación" },
-  volleyball: { color: "#7C3AED", emoji: "🏐", label: "Vóley" },
-  cycling: { color: "#65A30D", emoji: "🚴", label: "Ciclismo" },
-  hockey: { color: "#BE185D", emoji: "🏑", label: "Hockey" },
-  rugby: { color: "#92400E", emoji: "🏉", label: "Rugby" },
-  boxing: { color: "#DC2626", emoji: "🥊", label: "Boxeo" },
-  martial_arts: { color: "#1D4ED8", emoji: "🥋", label: "Artes Marciales" },
-  athletics: { color: "#D97706", emoji: "🏅", label: "Atletismo" },
-  crossfit: { color: "#9333EA", emoji: "🏋️", label: "Crossfit" },
-  climbing: { color: "#64748B", emoji: "🧗", label: "Escalada" },
-  skateboarding: { color: "#0F172A", emoji: "🛹", label: "Skate" },
-  handball: { color: "#DC2626", emoji: "🤾", label: "Handball" },
-  table_tennis: { color: "#0369A1", emoji: "🏓", label: "Tenis de Mesa" },
-  badminton: { color: "#16A34A", emoji: "🏸", label: "Bádminton" },
-  rowing: { color: "#0891B2", emoji: "🚣", label: "Remo" },
-  kayak: { color: "#0E7490", emoji: "🛶", label: "Canotaje" },
-  wrestling: { color: "#92400E", emoji: "🤼", label: "Lucha" },
-  judo: { color: "#1D4ED8", emoji: "🥋", label: "Judo" },
-  taekwondo: { color: "#DC2626", emoji: "🦵", label: "Taekwondo" },
-  fencing: { color: "#374151", emoji: "🤺", label: "Esgrima" },
-  archery: { color: "#065F46", emoji: "🏹", label: "Tiro con Arco" },
-  weightlifting: { color: "#7C3AED", emoji: "🏋️", label: "Halterofilia" },
-  gymnastics: { color: "#BE185D", emoji: "🤸", label: "Gimnasia" },
-  triathlon: { color: "#D97706", emoji: "🏊", label: "Triatlón" },
-  equestrian: { color: "#92400E", emoji: "🏇", label: "Equitación" },
-  simulator_f1: { color: "#DC2626", emoji: "🏎️", label: "Sim F1" },
-  simulator_flight: { color: "#1D4ED8", emoji: "✈️", label: "Sim Vuelo" },
-  simulator_rally: { color: "#92400E", emoji: "🚗", label: "Sim Rally" },
-  simulator_golf: { color: "#15803D", emoji: "⛳", label: "Sim Golf" },
-  simulator_vr: { color: "#7C3AED", emoji: "🥽", label: "Sim VR" },
-  simulator_shooting: { color: "#374151", emoji: "🎯", label: "Sim Tiro" },
-  other: { color: "#6B7280", emoji: "📍", label: "Deporte" },
-};
 
 const FILTERS: { key: FilterType; label: string; color: string }[] = [
   { key: "all", label: "Todos", color: "#2563EB" },
@@ -297,17 +256,26 @@ export default function CustomMapView({
     filter === "all" ? places : places.filter((p) => p.type === filter);
   const html = coords && !loading ? buildHTML(coords, filtered) : null;
 
-  // Estado vacío cuando hay filtro aplicado y no hay lugares
   if (initialFilter && filtered.length === 0 && !loading) {
     return (
       <View style={styles.emptyState}>
         <Text style={styles.emptyEmoji}>😕</Text>
         <Text style={styles.emptyTitle}>
-          No hay lugares de este deporte cerca
+          No encontramos lugares de este deporte en tu zona
         </Text>
         <Text style={styles.emptySubtitle}>
-          Prueba con otro deporte o amplía tu búsqueda
+          OpenStreetMap no tiene registros dentro de 4km de tu ubicación. Podés
+          ampliar la búsqueda o consultar al asistente IA para opciones
+          alternativas.
         </Text>
+        <TouchableOpacity
+          style={styles.aiSuggestion}
+          onPress={() => router.push("/ai-chat")}
+        >
+          <Text style={styles.aiSuggestionText}>
+            🤖 Pedirle al asistente una alternativa
+          </Text>
+        </TouchableOpacity>
       </View>
     );
   }
@@ -532,4 +500,12 @@ const styles = StyleSheet.create({
     textAlign: "center",
     lineHeight: 20,
   },
+  aiSuggestion: {
+    marginTop: 16,
+    backgroundColor: "#2563EB",
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    borderRadius: 999,
+  },
+  aiSuggestionText: { color: "white", fontWeight: "700", fontSize: 14 },
 });
