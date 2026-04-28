@@ -2,15 +2,16 @@ import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import {
-  ActivityIndicator,
-  FlatList,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
+    ActivityIndicator,
+    FlatList,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { MARKER_CONFIG } from "../components/MapView";
+import SportIcon from "../components/SportIcon";
 import { Booking, cancelBooking, fetchMyBookings } from "../services/bookings";
 
 export default function MyBookingsScreen() {
@@ -82,7 +83,11 @@ export default function MyBookingsScreen() {
                     { backgroundColor: cfg.color + "20" },
                   ]}
                 >
-                  <Text style={{ fontSize: 24 }}>{cfg.emoji}</Text>
+                  <SportIcon
+                    type={item.place_type}
+                    size={24}
+                    color={cfg.color}
+                  />
                 </View>
                 <View style={{ flex: 1, gap: 3 }}>
                   <Text

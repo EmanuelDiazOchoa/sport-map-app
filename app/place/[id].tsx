@@ -12,6 +12,7 @@ import {
   View,
 } from "react-native";
 import { MARKER_CONFIG } from "../../components/MapView";
+import SportIcon from "../../components/SportIcon";
 import { useAuth } from "../../hooks/useAuth";
 import { useFavorites } from "../../hooks/useFavorites";
 import {
@@ -38,7 +39,6 @@ function StarRating({
 }) {
   return (
     <View style={{ gap: 6 }}>
-      {/* Promedio actual */}
       <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
         {[1, 2, 3, 4, 5].map((i) => (
           <Text
@@ -271,10 +271,19 @@ export default function PlaceDetail() {
           <Text style={{ fontSize: 22 }}>{fav ? "❤️" : "🤍"}</Text>
         </TouchableOpacity>
         <View style={styles.heroInfo}>
-          <View style={[styles.heroBadge, { backgroundColor: cfg.color }]}>
-            <Text style={styles.heroBadgeText}>
-              {cfg.emoji} {cfg.label}
-            </Text>
+          <View
+            style={[
+              styles.heroBadge,
+              {
+                backgroundColor: cfg.color,
+                flexDirection: "row",
+                alignItems: "center",
+                gap: 6,
+              },
+            ]}
+          >
+            <SportIcon type={place.type} size={12} color="white" />
+            <Text style={styles.heroBadgeText}>{cfg.label}</Text>
           </View>
           <Text style={styles.heroTitle}>{place.name}</Text>
           {place.address && (

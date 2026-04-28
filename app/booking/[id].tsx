@@ -2,15 +2,16 @@ import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useState } from "react";
 import {
-  ActivityIndicator,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
+    ActivityIndicator,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { MARKER_CONFIG } from "../../components/MapView";
+import SportIcon from "../../components/SportIcon";
 import { useAuth } from "../../hooks/useAuth";
 import { createBooking } from "../../services/bookings";
 
@@ -161,7 +162,7 @@ export default function BookingScreen() {
           <Ionicons name="chevron-back" size={22} color="#374151" />
         </TouchableOpacity>
         <View style={styles.headerInfo}>
-          <Text style={styles.headerEmoji}>{cfg.emoji}</Text>
+          <SportIcon type={placeType ?? "other"} size={36} color="white" />
           <View>
             <Text style={styles.headerTitle}>Reservar lugar</Text>
             <Text style={styles.headerSub} numberOfLines={1}>

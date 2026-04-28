@@ -15,6 +15,7 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { MARKER_CONFIG } from "../components/MapView";
+import SportIcon from "../components/SportIcon";
 import { fetchNearbyPlaces } from "../services/overpass";
 import { fetchPlaces } from "../services/supabasePlaces";
 import { Place } from "../types/place";
@@ -141,7 +142,7 @@ function PlaceChip({ place, onPress }: { place: Place; onPress: () => void }) {
       onPress={onPress}
       activeOpacity={0.8}
     >
-      <Text style={{ fontSize: 16 }}>{cfg.emoji}</Text>
+      <SportIcon type={place.type} size={18} color={cfg.color} />
       <View style={{ flex: 1 }}>
         <Text style={styles.placeChipName} numberOfLines={1}>
           {place.name}

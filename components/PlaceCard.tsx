@@ -33,7 +33,7 @@ export default function PlaceCard({
       activeOpacity={0.8}
     >
       <View style={[styles.icon, { backgroundColor: cfg.color + "20" }]}>
-        <Text style={{ fontSize: 26 }}>{cfg.emoji}</Text>
+        <SportIcon type={place.type} size={26} color={cfg.color} />
       </View>
       <View style={{ flex: 1 }}>
         <Text style={styles.name}>{place.name}</Text>
