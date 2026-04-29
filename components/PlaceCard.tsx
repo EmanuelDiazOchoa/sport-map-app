@@ -2,6 +2,7 @@ import { useRouter } from "expo-router";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { Place } from "../types/place";
 import { MARKER_CONFIG } from "./MapView";
+import SportIcon from "./SportIcon";
 
 type Props = {
   place: Place;
