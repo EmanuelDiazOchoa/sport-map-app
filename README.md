@@ -2,48 +2,48 @@
 
 **Explorá y reservá espacios deportivos cerca tuyo.**
 
-SportMap es una app mobile desarrollada con React Native + Expo que combina geolocalización, mapas interactivos, inteligencia artificial y un sistema de reservas completo. Pensada como proyecto de portfolio para demostrar habilidades full-stack en desarrollo móvil.
+App mobile desarrollada con React Native + Expo que combina geolocalización, mapas interactivos, inteligencia artificial y un sistema de reservas completo. Proyecto de portfolio para demostrar habilidades full-stack en desarrollo móvil.
 
 ---
 
-## 📱 Screenshots
+## 📱 Demo
 
-> _Próximamente — mapa con markers / detalle del lugar / reservas / perfil_
+[▶️ Ver demo en YouTube](https://www.youtube.com/shorts/eirs4aGKUoE)
 
 ---
 
 ## ✨ Features
 
-- 🗺️ **Mapa interactivo** con OpenStreetMap + CartoDB (sin Google Maps, sin costo)
-- 📍 **Lugares reales** desde OpenStreetMap via Overpass API + lugares propios en Supabase
-- 🏋️ **35+ categorías deportivas** incluyendo todos los deportes olímpicos y simuladores (F1, vuelo, VR, golf, rally)
-- 🔍 **Filtros por deporte** con scroll horizontal y preselección desde el explorador
-- ❤️ **Favoritos** persistentes con AsyncStorage
-- 📅 **Sistema de reservas** completo — selección de día, horario, confirmación y cancelación
-- ⭐ **Valoración con estrellas** — rating interactivo por usuario, promedio en tiempo real desde Supabase
-- 🔐 **Autenticación** con Supabase Auth (email/password, RLS por usuario)
-- 🖼️ **Imágenes reales** por tipo de deporte via Unsplash API
-- 🌤️ **Clima en tiempo real** en el header — Open-Meteo, sin API key, gratis
-- 📆 **Pronóstico 7 días** con indicador outdoor/indoor por día
-- 🤖 **IA recomendador** — chat con Groq (Llama 3.3, gratuito) con contexto de clima, hora y lugares disponibles
-- ✨ **Splash screen animado** con fade + scale + dots al abrir la app
+- 🗺️ Mapa interactivo con OpenStreetMap + CartoDB — sin Google Maps, sin costo
+- 📍 Lugares reales desde Overpass API (OSM) + base propia en Supabase
+- 🏋️ 35+ categorías deportivas con íconos vectoriales (MaterialCommunityIcons)
+- 🔍 Explorador por deporte con grilla visual y lista de lugares cercanos
+- ❤️ Favoritos persistentes con AsyncStorage
+- 📅 Sistema de reservas completo — selección de día, horario, confirmación y cancelación
+- ⭐ Rating interactivo con promedio en tiempo real desde Supabase
+- 🔐 Autenticación con Supabase Auth — email/password con RLS por usuario
+- 🖼️ Imágenes reales por deporte via Unsplash API
+- 🌤️ Clima en tiempo real + pronóstico 7 días — Open-Meteo, sin API key
+- 🤖 Chat IA con Groq (Llama 3.3) — contexto de clima, hora y lugares cercanos
+- ✨ Splash screen animado con fade + scale + dots
 
 ---
 
 ## 🛠️ Stack tecnológico
 
-| Capa      | Tecnología                           |
-| --------- | ------------------------------------ |
-| Mobile    | React Native + Expo (SDK 55)         |
-| Routing   | Expo Router (file-based)             |
-| Mapas     | Leaflet.js + OpenStreetMap + CartoDB |
-| Backend   | Supabase (PostgreSQL + Auth + RLS)   |
-| Datos OSM | Overpass API                         |
-| Imágenes  | Unsplash API                         |
-| IA        | Groq API — Llama 3.3 (gratuita)      |
-| Clima     | Open-Meteo API (gratuita, sin key)   |
-| Estado    | React hooks + AsyncStorage           |
-| Lenguaje  | TypeScript                           |
+| Capa      | Tecnología                                     |
+| --------- | ---------------------------------------------- |
+| Mobile    | React Native + Expo SDK 55                     |
+| Routing   | Expo Router (file-based)                       |
+| Mapas     | Leaflet.js + OpenStreetMap + CartoDB (WebView) |
+| Backend   | Supabase — PostgreSQL + Auth + RLS             |
+| Datos OSM | Overpass API                                   |
+| Imágenes  | Unsplash API                                   |
+| IA        | Groq API — Llama 3.3 (gratuita, sin tarjeta)   |
+| Clima     | Open-Meteo API (gratuita, sin key)             |
+| Íconos    | MaterialCommunityIcons + Ionicons              |
+| Estado    | React hooks + AsyncStorage                     |
+| Lenguaje  | TypeScript                                     |
 
 ---
 
@@ -53,10 +53,10 @@ sport-map-app/
 ├── app/
 │ ├── (tabs)/
 │ │ ├── index.tsx # Mapa principal + clima en tiempo real
-│ │ ├── explore.tsx # Explorador por deporte (filtra el mapa)
-│ │ └── profile.tsx # Perfil + favoritos
+│ │ ├── explore.tsx # Explorador por deporte con grilla y lista
+│ │ └── profile.tsx # Perfil + favoritos + mis reservas
 │ ├── place/[id].tsx # Detalle del lugar + rating interactivo
-│ ├── booking/[id].tsx # Reserva — selección de día y horario
+│ ├── booking/[id].tsx # Reserva — día, horario, confirmación
 │ ├── my-bookings.tsx # Mis reservas + cancelar
 │ ├── ai-chat.tsx # Chat IA con clima y recomendaciones
 │ ├── weather.tsx # Pronóstico 7 días con outdoor/indoor
@@ -64,10 +64,14 @@ sport-map-app/
 ├── components/
 │ ├── MapView.tsx # Mapa + markers + filtros + bottom sheet
 │ ├── PlaceCard.tsx # Card reutilizable de lugar
+│ ├── SportIcon.tsx # Íconos vectoriales por deporte
 │ └── SplashLoader.tsx # Animación de carga inicial
+├── constants/
+│ ├── markerConfig.ts # Colores y labels por deporte
+│ └── sportIcons.ts # Mapeo de íconos MaterialCommunityIcons
 ├── services/
 │ ├── supabasePlaces.ts # Lugares desde Supabase
-│ ├── overpass.ts # Lugares reales de OSM (radio 5km, 43 tags)
+│ ├── overpass.ts # Lugares reales de OSM (radio 4km, 43 tags)
 │ ├── bookings.ts # CRUD de reservas
 │ ├── ratings.ts # Sistema de valoraciones por usuario
 │ └── unsplash.ts # Imágenes por categoría de deporte
@@ -84,33 +88,26 @@ sport-map-app/
 ## 🚀 Setup
 
 ```bash
-# Clonar el repo
 git clone https://github.com/EmanuelDiazOchoa/sport-map-app.git
 cd sport-map-app
-
-# Instalar dependencias
 npm install
-
-# Correr en Expo Go
 npx expo start --clear
 ```
 
 ### Variables de entorno
 
-Crear un archivo `.env` en la raíz del proyecto:
-
+Crear `.env` en la raíz del proyecto:
 EXPO_PUBLIC_GROQ_API_KEY=tu_key_aqui
 
-La key de Groq es **gratuita** — registrate en [console.groq.com](https://console.groq.com) sin tarjeta de crédito.
+La key de Groq es gratuita — registrate en [console.groq.com](https://console.groq.com) sin tarjeta de crédito.
 
-Las claves de Supabase y Unsplash están hardcodeadas para simplificar el setup de demo. Para producción, moverlas también al `.env`.
+Las claves de Supabase y Unsplash están en `lib/supabase.ts` y `services/unsplash.ts` para simplificar el setup de demo. Para producción moverlas al `.env`.
 
 ### Base de datos (Supabase)
 
 Correr el SQL en el SQL Editor de Supabase:
 
 ```sql
--- Tabla places
 create table places (
   id uuid default gen_random_uuid() primary key,
   name text not null,
@@ -126,7 +123,6 @@ create table places (
   created_at timestamp with time zone default now()
 );
 
--- Tabla bookings
 create table bookings (
   id uuid default gen_random_uuid() primary key,
   user_id uuid references auth.users(id) on delete cascade,
@@ -143,7 +139,6 @@ alter table bookings enable row level security;
 create policy "Users see own bookings" on bookings
   for all using (auth.uid() = user_id);
 
--- Tabla ratings
 create table ratings (
   id uuid default gen_random_uuid() primary key,
   user_id uuid references auth.users(id) on delete cascade,
@@ -162,49 +157,53 @@ create policy "Users manage own ratings" on ratings
 
 ## 🧠 Decisiones técnicas
 
-**Mapas sin costo:** Se usa Leaflet + OpenStreetMap en una WebView en lugar de `react-native-maps`, ya que Expo Go requiere Google Maps API key para Android. CartoDB Voyager como tile server (OSM directo bloqueaba por CORS/referer en WebView).
+**Mapas sin costo:** Leaflet + OpenStreetMap en WebView en lugar de `react-native-maps` — Expo Go requiere Google Maps API key para Android. CartoDB Voyager como tile server (OSM directo bloqueaba por CORS en WebView).
 
-**IA gratuita:** Groq (Llama 3.3) en lugar de OpenAI — completamente gratuita sin tarjeta. La IA recibe contexto de clima actual, hora del día y la lista de lugares disponibles para dar recomendaciones relevantes.
+**IA gratuita:** Groq (Llama 3.3) en lugar de OpenAI — completamente gratuita sin tarjeta. El prompt usa formato pipe-separated compacto para no superar el límite de 12.000 tokens por minuto del free tier.
 
-**Clima sin API key:** Open-Meteo API — gratuita, sin registro. Usada en el header (temperatura actual), strip de pronóstico 3 días, pantalla completa de 7 días, y como contexto para la IA.
+**Ciclo de dependencias resuelto:** `MARKER_CONFIG` extraído a `constants/markerConfig.ts` para romper el ciclo circular `MapView ↔ overpass` que generaba warnings en Metro.
 
-**Favoritos completos:** `useFavorites` guarda el objeto `Place[]` completo en lugar de solo IDs, para soportar lugares de OSM que no existen en Supabase.
+**Caché de OSM:** Resultados de Overpass guardados en AsyncStorage por coordenadas redondeadas — evita llamadas repetidas y mejora el tiempo de carga en aperturas subsiguientes.
 
-**Datos reales:** Overpass API con 43 combinaciones de tags OSM cubre todos los deportes olímpicos y principales en un radio de 5km desde la ubicación del usuario.
+**Favoritos completos:** `useFavorites` persiste el objeto `Place[]` completo en lugar de solo IDs, para soportar lugares de OSM que no existen en Supabase.
 
-**Geografía global:** El mapa funciona en cualquier ciudad del mundo — OSM y Overpass tienen datos globales. La app detecta la ubicación real del usuario independientemente del país.
+**Geografía global:** OSM y Overpass tienen datos mundiales — la app funciona en cualquier ciudad sin ningún cambio de configuración.
 
 ---
 
 ## 📋 Roadmap
 
 - [x] Mapa interactivo con OSM + CartoDB (sin Google Maps)
-- [x] Markers por tipo de deporte con colores y emojis
+- [x] Markers por deporte con colores e íconos vectoriales
 - [x] Filtros por deporte + bottom sheet animado
-- [x] Explorador de deportes que preselecciona filtro en el mapa
-- [x] Pantalla de detalle con imagen real (Unsplash)
+- [x] Explorador con grilla visual y lista de lugares cercanos
+- [x] Detalle del lugar con imagen real (Unsplash)
 - [x] Favoritos persistentes con AsyncStorage
 - [x] Autenticación con Supabase Auth (RLS por usuario)
 - [x] Sistema de reservas completo (día + horario + cancelar)
 - [x] Simuladores deportivos (F1, vuelo, rally, golf, VR, tiro)
 - [x] Clima en tiempo real en header principal (Open-Meteo)
 - [x] Pronóstico 7 días con indicador outdoor/indoor
-- [x] IA recomendador con contexto de clima, hora y lugares (Groq, gratuito)
+- [x] Chat IA con contexto de clima, hora y lugares (Groq, gratuito)
 - [x] Splash screen animado (fade + scale + dots)
 - [x] 35+ deportes olímpicos con tags OSM correctos
 - [x] Sistema de valoración con estrellas (ratings en Supabase, promedio en tiempo real)
+- [x] Íconos vectoriales en toda la app (MaterialCommunityIcons)
 - [ ] Push notifications para recordar reservas (requiere EAS Build)
+- [ ] Validación de disponibilidad real de horarios
 - [ ] Freemium con RevenueCat
 
 ---
 
 ## 👤 Autor
 
-### Emanuel Díaz Ochoa
+Emanuel Díaz Ochoa
 
-- GitHub: [@EmanuelDiazOchoa](https://github.com/EmanuelDiazOchoa)
-- LinkedIn: [tu-linkedin](https://linkedin.com/in/tu-linkedin)
+- GitHub: [@EmanuelDiazOchoa](https://github.com/EmanuelDiazOchoa/sport-map-app)
+- LinkedIn: [linkedin.com/in/tu-linkedin](https://linkedin.com/in/tu-linkedin)
 
 ---
 
-## Proyecto desarrollado como portfolio. Open to work 🚀
+## 📝 Nota
+
+Proyecto desarrollado como portfolio. Open to work 🚀
