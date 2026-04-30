@@ -200,7 +200,7 @@ create policy "Users manage own ratings" on ratings
 Emanuel Díaz Ochoa
 
 - GitHub: [@EmanuelDiazOchoa](https://github.com/EmanuelDiazOchoa/sport-map-app)
-- LinkedIn: [linkedin.com/in/tu-linkedin](https://linkedin.com/in/tu-linkedin)
+- LinkedIn: [linkedin.com/in/tu-linkedin](https://www.linkedin.com/in/hector-emanuel-diaz-ochoa/)
 
 ---
 
