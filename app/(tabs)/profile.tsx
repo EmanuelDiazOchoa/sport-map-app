@@ -20,7 +20,6 @@ export default function ProfileScreen() {
 
   return (
     <View style={styles.root}>
-      {/* Header usuario */}
       <View style={[styles.userHeader, { paddingTop: insets.top + 12 }]}>
         <View style={styles.avatar}>
           <Text style={styles.avatarText}>
@@ -49,7 +48,6 @@ export default function ProfileScreen() {
         )}
       </View>
 
-      {/* Botón mis reservas */}
       <TouchableOpacity
         style={styles.bookingsBtn}
         onPress={() => router.push("/my-bookings")}

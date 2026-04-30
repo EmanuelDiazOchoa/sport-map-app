@@ -3,12 +3,12 @@ import * as Location from "expo-location";
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import {
-    ActivityIndicator,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  ActivityIndicator,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -104,7 +104,6 @@ export default function WeatherScreen() {
         const loc = await Location.getCurrentPositionAsync({});
         const { latitude, longitude } = loc.coords;
 
-        // Geocoding reverso para nombre de ciudad
         const geo = await Location.reverseGeocodeAsync({ latitude, longitude });
         if (geo[0]?.city) setCity(geo[0].city);
 
@@ -168,7 +167,6 @@ export default function WeatherScreen() {
         </View>
       ) : (
         <ScrollView contentContainerStyle={styles.scroll}>
-          {/* Sugerencia IA */}
           {suggestion && (
             <View style={styles.suggestionCard}>
               <Text style={styles.suggestionIcon}>🤖</Text>
@@ -176,7 +174,6 @@ export default function WeatherScreen() {
             </View>
           )}
 
-          {/* Hoy — card grande */}
           {forecast[0] && (
             <View
               style={[
@@ -228,7 +225,6 @@ export default function WeatherScreen() {
             </View>
           )}
 
-          {/* Próximos 6 días */}
           <Text style={styles.sectionTitle}>Próximos días</Text>
           {forecast.slice(1).map((day) => (
             <View key={day.date} style={styles.dayRow}>
@@ -254,7 +250,6 @@ export default function WeatherScreen() {
             </View>
           ))}
 
-          {/* Leyenda */}
           <View style={styles.legend}>
             <View style={styles.legendItem}>
               <View
@@ -272,7 +267,6 @@ export default function WeatherScreen() {
             </View>
           </View>
 
-          {/* Botón IA */}
           <TouchableOpacity
             style={styles.aiBtn}
             onPress={() => router.push("/ai-chat")}

@@ -13,7 +13,6 @@ export default function SplashLoader({ onFinish }: Props) {
   const dotAnim3 = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
-    // Entrada del logo
     Animated.parallel([
       Animated.spring(scaleAnim, {
         toValue: 1,
@@ -28,7 +27,6 @@ export default function SplashLoader({ onFinish }: Props) {
       }),
     ]).start();
 
-    // Puntos de carga animados en loop
     const dotLoop = Animated.loop(
       Animated.stagger(200, [
         Animated.sequence([
@@ -71,7 +69,6 @@ export default function SplashLoader({ onFinish }: Props) {
     );
     dotLoop.start();
 
-    // Salida después de 2.2 segundos
     const timer = setTimeout(() => {
       Animated.parallel([
         Animated.timing(fadeAnim, {

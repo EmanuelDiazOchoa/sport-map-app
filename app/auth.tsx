@@ -61,7 +61,6 @@ export default function AuthScreen() {
       behavior={Platform.OS === "ios" ? "padding" : "height"}
     >
       <View style={styles.container}>
-        {/* Header */}
         <View style={styles.header}>
           <Text style={styles.emoji}>🏟️</Text>
           <Text style={styles.title}>SportMap</Text>
@@ -72,7 +71,6 @@ export default function AuthScreen() {
           </Text>
         </View>
 
-        {/* Tabs */}
         <View style={styles.tabs}>
           {(["login", "register"] as Mode[]).map((m) => (
             <TouchableOpacity
@@ -93,7 +91,6 @@ export default function AuthScreen() {
           ))}
         </View>
 
-        {/* Inputs */}
         <View style={styles.form}>
           <View style={styles.inputWrapper}>
             <Text style={styles.inputLabel}>Email</Text>
@@ -121,7 +118,6 @@ export default function AuthScreen() {
             />
           </View>
 
-          {/* Error / Success */}
           {error && (
             <View style={styles.errorBox}>
               <Text style={styles.errorText}>⚠️ {error}</Text>
@@ -133,7 +129,6 @@ export default function AuthScreen() {
             </View>
           )}
 
-          {/* Botón */}
           <TouchableOpacity
             style={[styles.btn, loading && { opacity: 0.7 }]}
             onPress={handleSubmit}
