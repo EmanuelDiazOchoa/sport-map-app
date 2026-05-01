@@ -2,7 +2,7 @@
 
 **Explorá y reservá espacios deportivos cerca tuyo.**
 
-App mobile desarrollada con React Native + Expo que combina geolocalización, mapas interactivos, inteligencia artificial y un sistema de reservas completo. Proyecto de portfolio para demostrar habilidades full-stack en desarrollo móvil.
+App mobile desarrollada con React Native + Expo que combina geolocalización, mapas interactivos, inteligencia artificial y un sistema de reservas completo en desarrollo móvil.
 
 ---
 
