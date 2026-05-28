@@ -1,5 +1,5 @@
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { Tabs } from "expo-router";
-import { Text } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function TabLayout() {
@@ -31,8 +31,8 @@ export default function TabLayout() {
         name="index"
         options={{
           title: "Mapa",
-          tabBarIcon: ({ color }) => (
-            <Text style={{ fontSize: 20, color }}>🗺️</Text>
+          tabBarIcon: ({ color, size }) => (
+            <MaterialCommunityIcons name="map" size={size} color={color} />
           ),
         }}
       />
@@ -40,8 +40,8 @@ export default function TabLayout() {
         name="explore"
         options={{
           title: "Explorar",
-          tabBarIcon: ({ color }) => (
-            <Text style={{ fontSize: 20, color }}>🔍</Text>
+          tabBarIcon: ({ color, size }) => (
+            <MaterialCommunityIcons name="magnify" size={size} color={color} />
           ),
         }}
       />
@@ -49,8 +49,8 @@ export default function TabLayout() {
         name="profile"
         options={{
           title: "Perfil",
-          tabBarIcon: ({ color }) => (
-            <Text style={{ fontSize: 20, color }}>👤</Text>
+          tabBarIcon: ({ color, size }) => (
+            <MaterialCommunityIcons name="account" size={size} color={color} />
           ),
         }}
       />

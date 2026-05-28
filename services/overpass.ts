@@ -60,12 +60,14 @@ const TAG_QUERIES = [
 ];
 
 function buildQuery(lat: number, lng: number): string {
+  const lines = TAG_QUERIES.map(
+    ({ key, value }) =>
+      `  node["${key}"="${value}"](around:4000,${lat},${lng});`,
+  ).join("\n");
+
   return `[out:json][timeout:25];
 (
-  node["leisure"="pitch"](around:4000,${lat},${lng});
-  node["sport"~"padel|tennis|soccer|basketball"](around:4000,${lat},${lng});
-  node["amenity"="gym"](around:4000,${lat},${lng});
-  node["leisure"="sports_centre"](around:4000,${lat},${lng});
+${lines}
 );
 out;`;
 }
