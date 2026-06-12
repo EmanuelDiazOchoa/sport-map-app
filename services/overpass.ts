@@ -65,7 +65,7 @@ function buildQuery(lat: number, lng: number): string {
       `  node["${key}"="${value}"](around:4000,${lat},${lng});`,
   ).join("\n");
 
-  return `[out:json][timeout:25];
+  return `[out:json][timeout:30];
 (
 ${lines}
 );
@@ -166,23 +166,38 @@ export async function fetchNearbyPlaces(
     "https://overpass-api.de/api/interpreter",
     "https://overpass.kumi.systems/api/interpreter",
     "https://overpass.openstreetmap.ru/api/interpreter",
+    "https://maps.mail.ru/osm/tools/overpass/api/interpreter",
+    "https://overpass.private.coffee/api/interpreter",
   ];
 
   for (const server of OVERPASS_SERVERS) {
     try {
       console.log(`Intentando ${server}...`);
       const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 25000);
+      const timeout = setTimeout(() => controller.abort(), 30000);
 
-      const res = await fetch(server, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/x-www-form-urlencoded",
-          Accept: "application/json",
-        },
-        body: `data=${encodeURIComponent(buildQuery(lat, lng))}`,
-        signal: controller.signal,
-      });
+      const query = buildQuery(lat, lng);
+      let res: Response;
+
+      try {
+        // GET es más compatible — evita el 406 de overpass-api.de
+        res = await fetch(`${server}?data=${encodeURIComponent(query)}`, {
+          method: "GET",
+          headers: { Accept: "application/json" },
+          signal: controller.signal,
+        });
+      } catch {
+        // Fallback a POST si GET falla o es abortado
+        res = await fetch(server, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
+          },
+          body: new URLSearchParams({ data: query }).toString(),
+          signal: controller.signal,
+        });
+      }
+
       clearTimeout(timeout);
 
       const text = await res.text();
@@ -190,7 +205,7 @@ export async function fetchNearbyPlaces(
         `Respuesta de ${server}: status ${res.status}, primeros chars: ${text.slice(0, 50)}`,
       );
 
-      if (text.startsWith("<!DOCTYPE")) {
+      if (text.startsWith("<!DOCTYPE") || text.startsWith("<html")) {
         throw new Error("Respuesta HTML inválida");
       }
 
