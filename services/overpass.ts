@@ -187,18 +187,19 @@ export async function fetchNearbyPlaces(
           signal: controller.signal,
         });
       } catch {
-        // Fallback a POST si GET falla o es abortado
+        // Fallback a POST con controller nuevo (el anterior ya fue abortado)
+        const controller2 = new AbortController();
+        const timeout2 = setTimeout(() => controller2.abort(), 30000);
         res = await fetch(server, {
           method: "POST",
           headers: {
             "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
           },
           body: new URLSearchParams({ data: query }).toString(),
-          signal: controller.signal,
+          signal: controller2.signal,
         });
+        clearTimeout(timeout2);
       }
-
-      clearTimeout(timeout);
 
       const text = await res.text();
       console.log(
